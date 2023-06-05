@@ -1,0 +1,8 @@
+{
+  "name": "aws-shop-backend",
+  "version": "1.0.0",
+  "description": "Backend for nodejs-aws-shop-react",
+  "main": "index.js",
+  "author": "barbedwire",
+  "license": "ISC"
+}

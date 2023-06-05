@@ -1,0 +1,12 @@
+.idea
+.vscode
+node_modules
+*/node_modules
+*/.env.local
+*/cdk.out
+*/out
+
+
+
+# Webpack directories
+*/.webpack
