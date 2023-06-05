@@ -1,5 +1,7 @@
- - Product service api url: https://k7id9o1czl.execute-api.eu-west-1.amazonaws.com; (/products and /products/{productId})
+ # Task 3
 
- - front-end url (reworked to use new backend data - products list): https://d1eot7ucp9tkae.cloudfront.net/
+  - Product service api url: https://k7id9o1czl.execute-api.eu-west-1.amazonaws.com; (/products and /products/{productId})
 
- - additional scope tasks: main error scenario, unit tests;
+  - front-end url (reworked to use new backend data - products list): https://d1eot7ucp9tkae.cloudfront.net/
+
+  - additional scope tasks: main error scenario, unit tests;
