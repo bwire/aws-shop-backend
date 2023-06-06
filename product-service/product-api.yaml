@@ -7,8 +7,6 @@ info:
     email: e.barbedwire@gmail.com
   version: 1.0.0
 servers:
-- url: https://virtserver.swaggerhub.com/bwire/T3-serverless/1.0.0
-  description: SwaggerHub API Auto Mocking
 - url: https://k7id9o1czl.execute-api.eu-west-1.amazonaws.com
 tags:
 - name: Products
