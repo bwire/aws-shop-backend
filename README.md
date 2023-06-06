@@ -1,9 +1,3 @@
- # Task 3
-
-Product service api url: https://k7id9o1czl.execute-api.eu-west-1.amazonaws.com; (/products and /products/{productId})
-
-API Documentation: https://app.swaggerhub.com/apis-docs/bwire/T3-serverless/1.0.0
-
-Front-end url (reworked to use new backend data - products list): https://d1eot7ucp9tkae.cloudfront.net/
-
-Additional scope tasks: api documentation, main error scenario, unit tests;
+This is the aws-shop-backend multirepository for https://github.com/rolling-scopes-school/aws course.
+Includes:
+  - Product-service: https://github.com/bwire/aws-shop-backend/blob/bfb0c651e4ba853515ae7f43b6ac29e78e9cc781/README.md#L3
