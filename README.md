@@ -4,4 +4,4 @@ This is the aws-shop-backend multirepository for:
 
 Includes: 
 
-[Product-service](https://github.com/bwire/aws-shop-backend/blob/bfb0c651e4ba853515ae7f43b6ac29e78e9cc781/README.md)
+[Product-service](https://github.com/bwire/aws-shop-backend/blob/a0db1728aa01826dba9f54533340193288f47ee6/product-service/README.md#L1)
