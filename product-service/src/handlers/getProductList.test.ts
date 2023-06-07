@@ -38,6 +38,6 @@ describe('getProductList tests', () => {
     
     expect(spyFn).toBeCalledTimes(1);
     expect(result.statusCode).toBe(500); 
-    expect(result.body).toBe(JSON.stringify({ message: 'Test error'));
+    expect(result.body).toBe(JSON.stringify({ message: 'Test error'}));
   });
 }); 

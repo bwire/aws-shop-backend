@@ -5,7 +5,6 @@ export interface ProductInterface {
   title: string,
   description: string,
   price: number,
-  count: number,
 };
 
 export interface ProductByIdPathParams extends APIGatewayProxyEventPathParameters {

@@ -1,4 +1,4 @@
-This is the aws-shop-backend multirepository for: 
+This is the aws-shop-backend monorepository for: 
 
 [Rolling-Scopes aws course](https://github.com/rolling-scopes-school/aws)
 
