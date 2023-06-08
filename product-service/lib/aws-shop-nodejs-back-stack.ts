@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { HttpApi, CorsHttpMethod, HttpMethod, ParameterMapping, MappingValue } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { Construct } from 'constructs';
@@ -14,12 +15,24 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
     const APP_PREFIX = "bw-aws-shop-backend";
     super(scope, `${APP_PREFIX}-stack`, props);
 
+    const policy = new iam.Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ["dynamodb:Query"],
+          resources: [
+            `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_PRODUCTS}`, 
+            `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_STOCKS}`
+          ],
+        })
+      ],
+    });
+
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/index.ts',
       runtime: lambda.Runtime.NODEJS_18_X,
     };
 
-    const getProductList = new NodejsFunction(this, `${APP_PREFIX}-get-product-list-lambda`, {
+    const getProductListLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-list-lambda`, {
       ...sharedProps,
       functionName: "getProductList",
       handler: "getAllProducts",
@@ -29,7 +42,7 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
       },  
     });
 
-    const getProductById = new NodejsFunction(this, `${APP_PREFIX}-get-product-by-id-lambda`, {
+    const getProductByIdLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-by-id-lambda`, {
       ...sharedProps,
       functionName: "getProductById",
       handler: "getProductById",
@@ -38,6 +51,9 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
         TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
       },    
     });
+
+    getProductListLambda.role?.attachInlinePolicy(policy);
+    getProductByIdLambda.role?.attachInlinePolicy(policy);
 
     const api = new HttpApi(this, `${APP_PREFIX}-products-api`, {
       corsPreflight: {
@@ -48,14 +64,14 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
     });
 
     api.addRoutes({
-      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductLst-integration`, getProductList),
+      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductLst-integration`, getProductListLambda),
       path: "/products",
       methods: [HttpMethod.GET]
     });
 
 
     api.addRoutes({
-      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductById-integration`, getProductById, {
+      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductById-integration`, getProductByIdLambda, {
         parameterMapping: new ParameterMapping().appendQueryString('productId', MappingValue.requestPathParam('productId'))}),
       path: "/products/{productId}",
       methods: [HttpMethod.GET]
