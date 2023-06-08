@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "deploy": "cdk deploy"
+    "deploy": "cdk deploy",
+    "fill-tables": "sh ./scripts/fill-tables.sh"
   },
   "devDependencies": {
     "@aws-cdk/aws-apigatewayv2-alpha": "^2.82.0-alpha.0",
@@ -23,5 +24,8 @@
     "ts-loader": "^5.3.3",
     "ts-node": "^8.10.2",
     "typescript": "^4.3.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.1.4"
   }
 }
