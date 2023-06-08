@@ -8,8 +8,6 @@ import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-node
 import * as dotenv from 'dotenv';
 
 dotenv.config();
-console.log(process.env) 
-
 export class AwsShopNodejsBackStack extends cdk.Stack {
   constructor(scope: Construct, props?: cdk.StackProps) {
     const APP_PREFIX = "bw-aws-shop-backend";
@@ -18,7 +16,10 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
     const policy = new iam.Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
       statements: [
         new iam.PolicyStatement({
-          actions: ["dynamodb:Query"],
+          actions: [
+            "dynamodb:Scan",
+            "dynamodb:Query"
+          ],
           resources: [
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_PRODUCTS}`, 
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_STOCKS}`
@@ -28,7 +29,7 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
     });
 
     const sharedProps: Partial<NodejsFunctionProps> = {
-      entry: './src/index.ts',
+      entry: './src/handlers/index.ts',
       runtime: lambda.Runtime.NODEJS_18_X,
     };
 
