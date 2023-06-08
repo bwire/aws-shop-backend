@@ -1,5 +1,5 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../service/product-service';
+import { ProductService } from '../services/product-service';
 import { getProductList } from './getProductList';
 
 describe('getProductList tests', () => {

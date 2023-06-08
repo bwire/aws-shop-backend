@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../service/product-service';
+import { ProductService } from '../services/product-service';
 import { getSingleProduct } from './getProductById';
-import { ProductByIdEvent } from '../service';
+import { ProductByIdEvent } from '../services/product-service';
 
 describe('getProductList tests', () => {
   const service = new ProductService();
