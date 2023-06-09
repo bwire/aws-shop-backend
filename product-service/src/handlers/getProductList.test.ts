@@ -1,9 +1,10 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ProductService } from '../services/product-service';
 import { getProductList } from './getProductList';
+import { DynamoDbRepository } from '../services/repository/dynamodb-repository';
 
 describe('getProductList tests', () => {
-  const service = new ProductService();
+  const service = new ProductService(new DynamoDbRepository());
 
   beforeEach(() => {
     jest.clearAllMocks();

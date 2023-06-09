@@ -2,9 +2,10 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 import { ProductService } from '../services/product-service';
 import { getSingleProduct } from './getProductById';
 import { ProductByIdEvent } from '../services/product-service';
+import { DynamoDbRepository } from '../services/repository/dynamodb-repository';
 
 describe('getProductList tests', () => {
-  const service = new ProductService();
+  const service = new ProductService(new DynamoDbRepository());
 
   const eventParams = {
     pathParameters: { productId: '123' },

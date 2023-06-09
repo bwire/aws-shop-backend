@@ -1,21 +1,27 @@
-import * as cdk from 'aws-cdk-lib';
-import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as iam from "aws-cdk-lib/aws-iam";
-import { HttpApi, CorsHttpMethod, HttpMethod, ParameterMapping, MappingValue } from "@aws-cdk/aws-apigatewayv2-alpha";
-import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { Construct } from 'constructs';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { 
+  HttpApi, 
+  CorsHttpMethod, 
+  HttpMethod, 
+  ParameterMapping, 
+  MappingValue 
+} from "@aws-cdk/aws-apigatewayv2-alpha";
+import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as dotenv from 'dotenv';
+import { config as envConfig } from 'dotenv';
 
-dotenv.config();
-export class AwsShopNodejsBackStack extends cdk.Stack {
-  constructor(scope: Construct, props?: cdk.StackProps) {
+envConfig();
+export class AwsShopNodejsBackStack extends Stack {
+  constructor(scope: Construct, props?: StackProps) {
     const APP_PREFIX = "bw-aws-shop-backend";
     super(scope, `${APP_PREFIX}-stack`, props);
 
-    const policy = new iam.Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
+    const policy = new Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
       statements: [
-        new iam.PolicyStatement({
+        new PolicyStatement({
           actions: [
             "dynamodb:Scan",
             "dynamodb:Query",
@@ -31,7 +37,7 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
 
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/handlers/index.ts',
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_18_X,
     };
 
     const getProductListLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-list-lambda`, {
