@@ -9,6 +9,8 @@ import {
 export const getSingleProduct = (productService: ProductService) => 
   async (event: ProductByIdEvent): Promise<APIGatewayProxyResult> => {
     try {
+      console.log('Incoming request', event);
+      
       const { productId } = event.pathParameters;
       const product = await productService.getProductById(productId);
       
