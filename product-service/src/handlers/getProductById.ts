@@ -1,4 +1,5 @@
 import { APIGatewayProxyResult } from "aws-lambda";
+import { StatusCodes } from 'http-status-codes';
 import { 
   ProductByIdEvent, 
   errorResponse, 
@@ -15,7 +16,7 @@ export const getSingleProduct = (productService: ProductService) =>
       const product = await productService.getProductById(productId);
       
       if (!product) {
-        return errorResponse(new Error(`Product with id ${productId} not found`), 404);
+        return errorResponse(new Error(`Product with id ${productId} not found`), StatusCodes.BAD_REQUEST);
       }
 
       return successResponse(product);

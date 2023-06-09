@@ -1,4 +1,5 @@
 import { APIGatewayProxyResult } from "aws-lambda";
+import { StatusCodes } from 'http-status-codes';
 
 const defaultHeaders = {
   'Access-Control-Allow-Methods': '*',
@@ -6,7 +7,7 @@ const defaultHeaders = {
   'Access-Control-Allow-Origin': '*'
 };
 
-const errorResponse = (err: Error, statusCode: number = 500): APIGatewayProxyResult => {
+const errorResponse = (err: Error, statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR): APIGatewayProxyResult => {
   return {
     statusCode,
     headers: {
@@ -16,7 +17,7 @@ const errorResponse = (err: Error, statusCode: number = 500): APIGatewayProxyRes
   }
 }
 
-const successResponse = (body: Object, statusCode: number = 200): APIGatewayProxyResult => {
+const successResponse = (body: Object, statusCode: number = StatusCodes.OK): APIGatewayProxyResult => {
   return {
     statusCode,
     headers: {
