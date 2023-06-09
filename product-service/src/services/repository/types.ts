@@ -1,4 +1,4 @@
-export interface ProductInterface {
+export interface Product {
   id: string,
   title: string,
   description: string,
@@ -7,6 +7,6 @@ export interface ProductInterface {
 };
 
 export interface ProductsRepository {
-  getProductById: (id: string) => Promise<ProductInterface | undefined>,
-  getAllProducts: () => Promise<ProductInterface[]>,
+  getProductById: (id: string) => Promise<Product | undefined>,
+  getAllProducts: () => Promise<Product[]>,
 }

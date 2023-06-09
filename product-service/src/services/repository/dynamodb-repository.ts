@@ -1,11 +1,11 @@
 import * as aws from 'aws-sdk';
-import { ProductInterface, ProductsRepository} from './types';
+import { Product, ProductsRepository} from './types';
 import { log } from 'console';
 
 export class DynamoDbRepository implements ProductsRepository {
   private dynamo = new aws.DynamoDB.DocumentClient();
 
-  async getAllProducts(): Promise<ProductInterface[]> {
+  async getAllProducts(): Promise<Product[]> {
     const productsScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_PRODUCTS! }).promise();
     const stocksScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_STOCKS! }).promise();
 
@@ -17,11 +17,11 @@ export class DynamoDbRepository implements ProductsRepository {
       return {
         ...p,
         count: stockRecord ? stockRecord.count : 0,
-      } as ProductInterface
+      } as Product
     });
   }
 
-  async getProductById(id: string): Promise<ProductInterface | undefined> {
+  async getProductById(id: string): Promise<Product | undefined> {
     const productsQueryResult = await this.dynamo.query({
       ExpressionAttributeValues: { ":id": id }, 
       KeyConditionExpression: "id = :id", 
@@ -41,6 +41,6 @@ export class DynamoDbRepository implements ProductsRepository {
     return {
       ...productsQueryResult.Items![0],
       count: stocksQueryResult.Items!.length > 0 ? stocksQueryResult.Items![0].count : 0,
-    } as ProductInterface
+    } as Product
   };
 }

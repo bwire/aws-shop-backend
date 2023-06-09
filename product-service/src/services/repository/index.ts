@@ -1,6 +1,6 @@
-import { ProductInterface, ProductsRepository} from './types';
+import { Product, ProductsRepository} from './types';
 
 export {
-  ProductInterface,
+  Product as ProductInterface,
   ProductsRepository,
 }
