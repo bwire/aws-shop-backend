@@ -18,7 +18,8 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
         new iam.PolicyStatement({
           actions: [
             "dynamodb:Scan",
-            "dynamodb:Query"
+            "dynamodb:Query",
+            "dynamodb:PutItem",
           ],
           resources: [
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_PRODUCTS}`, 
@@ -53,8 +54,19 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
       },    
     });
 
+    const createProductLambda = new NodejsFunction(this, `${APP_PREFIX}-create-product-lambda`, {
+      ...sharedProps,
+      functionName: "createProduct",
+      handler: "createProduct",
+      environment: {
+        TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
+        TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
+      },    
+    });
+
     getProductListLambda.role?.attachInlinePolicy(policy);
     getProductByIdLambda.role?.attachInlinePolicy(policy);
+    createProductLambda.role?.attachInlinePolicy(policy);
 
     const api = new HttpApi(this, `${APP_PREFIX}-products-api`, {
       corsPreflight: {
@@ -76,6 +88,12 @@ export class AwsShopNodejsBackStack extends cdk.Stack {
         parameterMapping: new ParameterMapping().appendQueryString('productId', MappingValue.requestPathParam('productId'))}),
       path: "/products/{productId}",
       methods: [HttpMethod.GET]
+    });
+
+    api.addRoutes({
+      integration: new HttpLambdaIntegration(`${APP_PREFIX}-createProduct-integration`, createProductLambda),
+        path: "/products",
+        methods: [HttpMethod.POST]
     });
   }
 }

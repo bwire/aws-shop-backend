@@ -1,14 +1,18 @@
 import * as aws from 'aws-sdk';
-import { ProductsRepository } from '../repository/types';
+import { Product, ProductsRepository } from '../repository/types';
 
 export class ProductService {
   constructor(private repository: ProductsRepository) {}
 
-  async getAllProducts() {
+  async getAllProducts(): Promise<Product[]> {
     return this.repository.getAllProducts();
   };
 
-  async getProductById(id: string) {
+  async getProductById(id: string): Promise<Product | undefined> {
     return this.repository.getProductById(id);
+  }
+
+  async createProduct(payload: Product): Promise<Product> {
+    return this.repository.createProduct(payload);
   }
 }

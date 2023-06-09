@@ -9,4 +9,5 @@ export interface Product {
 export interface ProductsRepository {
   getProductById: (id: string) => Promise<Product | undefined>,
   getAllProducts: () => Promise<Product[]>,
+  createProduct: (payload: Product) => Promise<Product>,
 }

@@ -1,9 +1,7 @@
-import * as aws from 'aws-sdk';
+import { DynamoDB } from 'aws-sdk';
 import { Product, ProductsRepository} from './types';
-import { log } from 'console';
-
 export class DynamoDbRepository implements ProductsRepository {
-  private dynamo = new aws.DynamoDB.DocumentClient();
+  private dynamo = new DynamoDB.DocumentClient();
 
   async getAllProducts(): Promise<Product[]> {
     const productsScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_PRODUCTS! }).promise();
@@ -43,4 +41,24 @@ export class DynamoDbRepository implements ProductsRepository {
       count: stocksQueryResult.Items!.length > 0 ? stocksQueryResult.Items![0].count : 0,
     } as Product
   };
+
+  async createProduct(payload: Product): Promise<Product> {
+    const { id, title, description, price, count } = payload;
+  
+    await this.dynamo.transactWrite({
+      TransactItems: [{
+        Put: {
+          TableName: process.env.TABLE_PRODUCTS!,
+          Item: { id, title, description, price },
+        }
+      }, {
+        Put: {
+          TableName: process.env.TABLE_STOCKS!,
+          Item: { product_id: id, count },  
+        }
+      }]
+    }).promise();
+    
+    return { ...payload};
+  }
 }
