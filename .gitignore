@@ -3,10 +3,9 @@
 node_modules
 */node_modules
 */.env.local
+*/.env
 */cdk.out
 */out
-
-
 
 # Webpack directories
 */.webpack
