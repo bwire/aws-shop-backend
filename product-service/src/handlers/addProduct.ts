@@ -2,7 +2,6 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 import { 
-  ProductByIdEvent, 
   errorResponse, 
   successResponse, 
   ProductService 
@@ -20,8 +19,7 @@ const ProductSchema = z.object({
 export const addProduct = (productService: ProductService) => 
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
-      console.log('Incoming request', event);
-      
+      console.log('Incoming request', event); 
       const payload: Product = JSON.parse(event.body! || '{}');
       const { success } = ProductSchema.safeParse(payload);
 
