@@ -1,4 +1,3 @@
-import * as aws from 'aws-sdk';
 import { Product, ProductsRepository } from '../repository/types';
 
 export class ProductService {
@@ -12,7 +11,7 @@ export class ProductService {
     return this.repository.getProductById(id);
   }
 
-  async createProduct(payload: Product): Promise<Product> {
+  async createProduct(payload: Product): Promise<Product | undefined> {
     return this.repository.createProduct(payload);
   }
 }

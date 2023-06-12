@@ -4,6 +4,8 @@ export class DynamoDbRepository implements ProductsRepository {
   private dynamo = new DynamoDB.DocumentClient();
 
   async getAllProducts(): Promise<Product[]> {
+    console.log('getting products');
+    
     const productsScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_PRODUCTS! }).promise();
     const stocksScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_STOCKS! }).promise();
 
@@ -42,23 +44,27 @@ export class DynamoDbRepository implements ProductsRepository {
     } as Product
   };
 
-  async createProduct(payload: Product): Promise<Product> {
+  async createProduct(payload: Product): Promise<Product | undefined> {
     const { id, title, description, price, count } = payload;
-  
-    await this.dynamo.transactWrite({
-      TransactItems: [{
-        Put: {
-          TableName: process.env.TABLE_PRODUCTS!,
-          Item: { id, title, description, price },
-        }
-      }, {
-        Put: {
-          TableName: process.env.TABLE_STOCKS!,
-          Item: { product_id: id, count },  
-        }
-      }]
-    }).promise();
     
+    try {
+      await this.dynamo.transactWrite({
+        TransactItems: [{
+          Put: {
+            TableName: process.env.TABLE_PRODUCTS!,
+            Item: { id, title, description, price },
+          }
+        }, {
+          Put: {
+            TableName: process.env.TABLE_STOCKS!,
+            Item: { product_id: id, count },  
+          }
+        }]
+      }).promise();  
+    } catch (error) {
+      return  
+    }
+     
     return { ...payload};
   }
 }

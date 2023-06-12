@@ -28,6 +28,10 @@ export const addProduct = (productService: ProductService) =>
       }
 
       const result = await productService.createProduct(payload);
+
+      if (!result) {
+        return errorResponse(new Error(`Error adding new data`), StatusCodes.INTERNAL_SERVER_ERROR);
+      }
       return successResponse(result, StatusCodes.CREATED);
     }
     catch (err: any) {
