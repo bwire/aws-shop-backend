@@ -2,6 +2,9 @@ import { Construct } from 'constructs';
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as core from 'aws-cdk-lib/core';
 import { 
   HttpApi, 
   CorsHttpMethod, 
@@ -15,11 +18,26 @@ import { config as envConfig } from 'dotenv';
 
 envConfig();
 export class AwsShopNodejsBackStack extends Stack {
+  private getEnvironment() {
+    return {
+      TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
+      TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
+      USE_NOSQL_DB: process.env.USE_NOSQL_DB!,
+      ...process.env.USE_NOSQL_DB === 'true' ? {} : {
+        PGHOST: process.env.PGHOST!,
+        PGPORT: process.env.PGPORT!,
+        PGDATABASE: process.env.PGDATABASE!,
+        PGUSER: process.env.PGUSER!,
+        PGPASSWORD: process.env.PGPASSWORD!,
+      }  
+    }
+  }
+
   constructor(scope: Construct, props?: StackProps) {
-    const APP_PREFIX = "bw-aws-shop-backend";
+    const APP_PREFIX = "bw-aws-shop-backnd";
     super(scope, `${APP_PREFIX}-stack`, props);
 
-    const policy = new Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
+    const lambdaPolicy = new Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
       statements: [
         new PolicyStatement({
           actions: [
@@ -31,49 +49,38 @@ export class AwsShopNodejsBackStack extends Stack {
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_PRODUCTS}`, 
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_STOCKS}`
           ],
-        })
+        }),
       ],
     });
 
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/handlers/index.ts',
       runtime: Runtime.NODEJS_18_X,
+      environment: this.getEnvironment(),
     };
 
     const getProductListLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-list-lambda`, {
       ...sharedProps,
       functionName: "getProductList",
       handler: "getAllProducts",
-      environment: {
-        TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
-        TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
-      },  
     });
 
     const getProductByIdLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-by-id-lambda`, {
       ...sharedProps,
       functionName: "getProductById",
       handler: "getProductById",
-      environment: {
-        TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
-        TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
-      },    
     });
 
     const createProductLambda = new NodejsFunction(this, `${APP_PREFIX}-create-product-lambda`, {
       ...sharedProps,
       functionName: "createProduct",
-      handler: "createProduct",
-      environment: {
-        TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
-        TABLE_STOCKS: process.env.DB_TABLE_STOCKS!,
-      },    
+      handler: "createProduct",  
     });
 
-    getProductListLambda.role?.attachInlinePolicy(policy);
-    getProductByIdLambda.role?.attachInlinePolicy(policy);
-    createProductLambda.role?.attachInlinePolicy(policy);
-
+    getProductListLambda.role?.attachInlinePolicy(lambdaPolicy);
+    getProductByIdLambda.role?.attachInlinePolicy(lambdaPolicy);
+    createProductLambda.role?.attachInlinePolicy(lambdaPolicy);
+    
     const api = new HttpApi(this, `${APP_PREFIX}-products-api`, {
       corsPreflight: {
         allowHeaders: ["*"],
