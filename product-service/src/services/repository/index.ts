@@ -1,6 +1,6 @@
 import { Product, ProductsRepository} from './types';
 
 export {
-  Product as ProductInterface,
+  Product,
   ProductsRepository,
 }

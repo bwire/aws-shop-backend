@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import 'source-map-support/register';
 import { App } from 'aws-cdk-lib';
 import { AwsShopNodejsBackStack } from '../lib/aws-shop-nodejs-back-stack';
