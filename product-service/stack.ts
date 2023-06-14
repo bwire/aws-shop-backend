@@ -1,10 +1,7 @@
 import { Construct } from 'constructs';
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as rds from 'aws-cdk-lib/aws-rds';
-import * as core from 'aws-cdk-lib/core';
 import { 
   HttpApi, 
   CorsHttpMethod, 
@@ -15,9 +12,11 @@ import {
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { config as envConfig } from 'dotenv';
+import 'source-map-support/register';
 
 envConfig();
-export class AwsShopNodejsBackStack extends Stack {
+
+class ProductServiceStack extends Stack {
   private getEnvironment() {
     return {
       TABLE_PRODUCTS: process.env.DB_TABLE_PRODUCTS!,
@@ -110,3 +109,7 @@ export class AwsShopNodejsBackStack extends Stack {
     });
   }
 }
+
+new ProductServiceStack(new App(), {
+  description: "This stack includes resources needed to deploy aws-shop-backend application"
+});

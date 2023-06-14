@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/aws-shop-nodejs-back.ts",
+  "app": "npx ts-node --prefer-ts-exts stack.ts",
   "watch": {
     "include": [
       "**"
