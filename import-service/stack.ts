@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { 
@@ -17,13 +18,22 @@ envConfig();
 class ImportServiceStack extends Stack {
   constructor(scope: Construct, props?: StackProps) {
     const APP_PREFIX = "bw-aws-shop-backend-is";
-    super(scope,  `${APP_PREFIX}-stack`, props);
+    super(scope, `${APP_PREFIX}-stack`, props);
 
-    const bucket = Bucket.fromBucketName(
-      this, 
-      `${APP_PREFIX}-imports-bucket`, 
-      process.env.AWS_IMPORTS_BUCKET_NAME!
-    );
+    const lambdaPolicy = new Policy(this, `${APP_PREFIX}-s3-put-signed-url-policy`, {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            "s3:GetObject",
+            "s3:PutObject",
+          ],
+          resources: [
+            `${process.env.AWS_IMPORTS_BUCKET_ARN}/*`, 
+          ],
+        }),
+      ],
+    });
 
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/handlers/index.ts',
@@ -34,13 +44,18 @@ class ImportServiceStack extends Stack {
       ...sharedProps,
       functionName: "importProductsFile",
       handler: "importProductsFile",
+      environment: {
+        BUCKET_NAME: process.env.AWS_IMPORTS_BUCKET_NAME!,
+      }
     });
+
+    importProductsFileLambda.role?.attachInlinePolicy(lambdaPolicy);
 
     const api = new HttpApi(this, `${APP_PREFIX}-imports-api`, {
       corsPreflight: {
         allowHeaders: ["*"],
         allowOrigins: ["*"],
-        allowMethods: [CorsHttpMethod.GET],
+        allowMethods: [CorsHttpMethod.ANY],
       }
     });
 
