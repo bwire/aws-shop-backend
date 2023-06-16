@@ -11,14 +11,20 @@ export class PostgresRepository implements ProductsRepository {
   
   async getAllProducts(): Promise<Product[]> {
     const client = await this.getClient();
-    const queryText = '\
-      SELECT p.*, COALESCE(s.count, 0) count \
-      FROM products p \
-      INNER JOIN stocks s \
-      ON p.id = s.product_id';
+      const queryText = '\
+        SELECT p.*, COALESCE(s.count, 0) count \
+        FROM products p \
+        INNER JOIN stocks s \
+        ON p.id = s.product_id';
 
-    const result = await client.query(queryText);
-    return result['rows'];
+    try {
+      const result = await client.query(queryText);
+      return result['rows'];  
+    } catch (error) {
+      throw error  
+    } finally {
+      client.end();  
+    }   
   }
   
   async getProductById(id: string): Promise<Product | undefined> {
@@ -30,12 +36,17 @@ export class PostgresRepository implements ProductsRepository {
       ON p.id = s.product_id \
       WHERE p.id = $1";
 
-    const result = await client.query({ text: queryText, values: [id]});
-
-    if (result['rows'].length < 1) {
-      return;
+    try {
+      const result = await client.query({ text: queryText, values: [id]});
+      if (result['rows'].length < 1) {
+        return;
+      }
+      return result['rows'][0];  
+    } catch (error) {
+      throw error  
+    } finally {
+      client.end();
     }
-    return result['rows'][0];
   }
 
   async createProduct(payload: Product): Promise<Product | undefined> {
@@ -51,7 +62,8 @@ export class PostgresRepository implements ProductsRepository {
       VALUES($1, $2)";
 
     try {
-      await client.query('BEGIN')
+      await client.query('BEGIN');
+
       await client.query({ 
         text: queryTextProducts, 
         values: [id, title, description, price],
@@ -60,12 +72,15 @@ export class PostgresRepository implements ProductsRepository {
         text: queryTextStocks, 
         values: [newId, price],
       });
-      await client.query('COMMIT')
+      
+      await client.query('COMMIT');
+
+      return payload;
     } catch (error) {
-      await client.query('ROLLBACK')
-      return;
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.end();
     }
-    
-    return payload;
   }
 }
