@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from "aws-cdk-lib/aws-lambda";
@@ -49,7 +50,28 @@ class ImportServiceStack extends Stack {
       }
     });
 
+    const importFileParserLambda = new NodejsFunction(this, `${APP_PREFIX}-import-file-parser-lambda`, {
+      ...sharedProps,
+      functionName: "importFileParser",
+      handler: "importFileParser",
+      environment: {
+        BUCKET_NAME: process.env.AWS_IMPORTS_BUCKET_NAME!,
+      }
+    });
+
     importProductsFileLambda.role?.attachInlinePolicy(lambdaPolicy);
+
+    const bucket = Bucket.fromBucketArn(
+      this, 
+      `${APP_PREFIX}-s3-import-service-bucket`, 
+      process.env.AWS_IMPORTS_BUCKET_ARN!
+    );
+
+    bucket.addEventNotification(
+      EventType.OBJECT_CREATED_PUT,
+      new LambdaDestination(importFileParserLambda),
+      {prefix: 'uploaded/', suffix: '.csv'}
+    );
 
     const api = new HttpApi(this, `${APP_PREFIX}-imports-api`, {
       corsPreflight: {
