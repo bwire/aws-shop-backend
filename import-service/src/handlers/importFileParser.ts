@@ -1,6 +1,6 @@
 import { APIGatewayProxyResult, S3Event, S3EventRecord } from "aws-lambda";
 import { ImportService } from "../service/import-service";
-import { successResponse, errorResponse } from './utils';
+import { successResponse, errorResponse } from '~/utils';
 
 export const importParser = (importService: ImportService) => 
   async (event: S3Event): Promise<APIGatewayProxyResult> => {

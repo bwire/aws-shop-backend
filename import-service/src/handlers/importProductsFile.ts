@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { ImportService } from "../service/import-service";
-import { successResponse, errorResponse } from './utils';
+import { successResponse, errorResponse } from '~/utils';
 import { StatusCodes } from "http-status-codes";
 
 export const importCSVFile = (importService: ImportService) => 
