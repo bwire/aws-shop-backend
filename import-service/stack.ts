@@ -28,8 +28,10 @@ class ImportServiceStack extends Stack {
           actions: [
             "s3:GetObject",
             "s3:PutObject",
+            "s3:DeleteObject",
           ],
           resources: [
+            `${process.env.AWS_IMPORTS_BUCKET_ARN}`,
             `${process.env.AWS_IMPORTS_BUCKET_ARN}/*`, 
           ],
         }),
@@ -55,11 +57,12 @@ class ImportServiceStack extends Stack {
       functionName: "importFileParser",
       handler: "importFileParser",
       environment: {
-        BUCKET_NAME: process.env.AWS_IMPORTS_BUCKET_NAME!,
+        CSV_SEPARATOR: process.env.CSV_SEPARATOR!,
       }
     });
 
     importProductsFileLambda.role?.attachInlinePolicy(lambdaPolicy);
+    importFileParserLambda.role?.attachInlinePolicy(lambdaPolicy);
 
     const bucket = Bucket.fromBucketArn(
       this, 
