@@ -13,7 +13,7 @@ export const importCSVFile = (importService: ImportService) =>
         return errorResponse(new Error("Bad request. Parameter 'name' has not been provided"), StatusCodes.BAD_REQUEST);
       }
 
-      const url = await importService.importProductsFile(name);
+      const url = importService.importProductsFile(name);
       return successResponse(url);
     } 
     catch (err: any) {
