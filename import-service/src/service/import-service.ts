@@ -30,7 +30,7 @@ export class ImportService {
         .on('error', (error: Error) => reject(error));
     }); 
 
-    // move file only if the stream finished correctly
+    // move file only after the stream is finished correctly (no error thrown)
     await this.s3.copyObject({
       Bucket: bucket,
       CopySource: `${bucket}/${key}`,
