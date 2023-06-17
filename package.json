@@ -4,5 +4,11 @@
   "description": "Backend for nodejs-aws-shop-react",
   "main": "index.js",
   "author": "barbedwire",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119"
+  },
+  "dependencies": {
+    "http-status-codes": "^2.2.0"
+  }
 }

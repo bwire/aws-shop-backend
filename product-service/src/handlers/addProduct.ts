@@ -2,11 +2,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 import { 
-  errorResponse, 
-  successResponse, 
   ProductService 
 } from "../services/product-service";
 import { Product } from "../services/repository/types";
+import { successResponse, errorResponse } from '~/utils';
 
 const ProductSchema = z.object({
   title: z.string(),

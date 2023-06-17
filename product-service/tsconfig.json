@@ -23,7 +23,10 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "types": ["node", "@types/jest"],
-    "outDir": "./out"
+    "outDir": "./out",
+    "paths": {
+      "~*": ["../lib/*"],
+     },
   },
   "exclude": [
     "node_modules",

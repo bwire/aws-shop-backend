@@ -2,10 +2,9 @@ import { APIGatewayProxyResult } from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
 import { 
   ProductByIdEvent, 
-  errorResponse, 
-  successResponse, 
   ProductService 
 } from "../services/product-service";
+import { successResponse, errorResponse } from '~/utils';
 
 export const getSingleProduct = (productService: ProductService) => 
   async (event: ProductByIdEvent): Promise<APIGatewayProxyResult> => {
