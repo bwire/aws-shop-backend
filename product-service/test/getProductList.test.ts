@@ -1,9 +1,11 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../service/product-service';
-import { getProductList } from './getProductList';
+import { ProductService } from '../src/services/product-service';
+import { getProductList } from '../src/handlers/getProductList';
+import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
+import { StatusCodes } from 'http-status-codes';
 
 describe('getProductList tests', () => {
-  const service = new ProductService();
+  const service = new ProductService(new DynamoDbRepository());
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -27,8 +29,11 @@ describe('getProductList tests', () => {
     const spyFn = jest.spyOn(service, "getAllProducts").mockResolvedValue(products);
     const result: APIGatewayProxyResult =  await getProductList(service)();
 
+    console.log('result', result);
+    
+
     expect(spyFn).toBeCalledTimes(1);
-    expect(result.statusCode).toBe(200); 
+    expect(result.statusCode).toBe(StatusCodes.OK); 
     expect(result.body).toBe(JSON.stringify(products));
   });
 
@@ -37,7 +42,7 @@ describe('getProductList tests', () => {
     const result: APIGatewayProxyResult = await getProductList(service)();
     
     expect(spyFn).toBeCalledTimes(1);
-    expect(result.statusCode).toBe(500); 
+    expect(result.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); 
     expect(result.body).toBe(JSON.stringify({ message: 'Test error'}));
   });
 }); 

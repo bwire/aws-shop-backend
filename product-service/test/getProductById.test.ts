@@ -1,10 +1,12 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../service/product-service';
-import { getSingleProduct } from './getProductById';
-import { ProductByIdEvent } from '../service';
+import { ProductService } from '../src/services/product-service';
+import { getSingleProduct } from '../src/handlers/getProductById';
+import { ProductByIdEvent } from '../src/services/product-service';
+import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
+import { StatusCodes } from 'http-status-codes';
 
-describe('getProductList tests', () => {
-  const service = new ProductService();
+describe('getProductById tests', () => {
+  const service = new ProductService(new DynamoDbRepository());
 
   const eventParams = {
     pathParameters: { productId: '123' },
@@ -28,8 +30,8 @@ describe('getProductList tests', () => {
 
     expect(spyFn).toBeCalledTimes(1);
     expect(spyFn).toBeCalledWith('123');
-    expect(result.statusCode).toBe(200); 
-    expect(result.body).toBe(JSON.stringify({ product }));
+    expect(result.statusCode).toBe(StatusCodes.OK); 
+    expect(result.body).toBe(JSON.stringify(product));
   });
 
   test('product not found - to handle error', async () => {
@@ -37,7 +39,7 @@ describe('getProductList tests', () => {
     const result: APIGatewayProxyResult = await getSingleProduct(service)(eventParams);
     
     expect(spyFn).toBeCalledTimes(1);
-    expect(result.statusCode).toBe(404); 
+    expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST); 
     expect(result.body).toBe(JSON.stringify({ message: 'Product with id 123 not found'}));
   });
 
@@ -46,7 +48,7 @@ describe('getProductList tests', () => {
     const result: APIGatewayProxyResult = await getSingleProduct(service)(eventParams);
     
     expect(spyFn).toBeCalledTimes(1);
-    expect(result.statusCode).toBe(500); 
+    expect(result.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); 
     expect(result.body).toBe(JSON.stringify({ message: 'Test error'}));
   });
 }); 
