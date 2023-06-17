@@ -9,11 +9,10 @@ import {
 import { Product } from "../services/repository/types";
 
 const ProductSchema = z.object({
-  id: z.string(),
   title: z.string(),
   description: z.string(),
-  count: z.number(),
-  price: z.number()
+  count: z.number().nonnegative(),
+  price: z.number().nonnegative().gt(0),
 });
 
 export const addProduct = (productService: ProductService) => 

@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk';
 import { Product, ProductsRepository} from './types';
+import { v4 as uuid } from 'uuid';
 export class DynamoDbRepository implements ProductsRepository {
   private dynamo = new DynamoDB.DocumentClient();
 
@@ -45,7 +46,8 @@ export class DynamoDbRepository implements ProductsRepository {
   };
 
   async createProduct(payload: Product): Promise<Product | undefined> {
-    const { id, title, description, price, count } = payload;
+    const { title, description, price, count } = payload;
+    const id = uuid().toString();
     
     try {
       await this.dynamo.transactWrite({

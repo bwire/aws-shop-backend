@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { parse } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { Product, ProductsRepository} from './types';
 
 export class PostgresRepository implements ProductsRepository {
@@ -51,8 +51,8 @@ export class PostgresRepository implements ProductsRepository {
 
   async createProduct(payload: Product): Promise<Product | undefined> {
     const client = await this.getClient();
-    const { id, title, description, price, count } = payload;
-    const newId = parse(id);
+    const { title, description, price, count } = payload;
+    const id = uuid();
 
     const queryTextProducts = "\
       INSERT INTO products(id, title, description, price) \
@@ -70,7 +70,7 @@ export class PostgresRepository implements ProductsRepository {
       });
       await client.query({ 
         text: queryTextStocks, 
-        values: [newId, price],
+        values: [id, price],
       });
       
       await client.query('COMMIT');
