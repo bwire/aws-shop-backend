@@ -21,48 +21,67 @@ class ImportServiceStack extends Stack {
     const APP_PREFIX = "bw-aws-shop-backend-is";
     super(scope, `${APP_PREFIX}-stack`, props);
 
-    const lambdaPolicy = new Policy(this, `${APP_PREFIX}-s3-put-signed-url-policy`, {
-      statements: [
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          actions: [
-            "s3:GetObject",
-            "s3:PutObject",
-            "s3:DeleteObject",
-          ],
-          resources: [
-            `${process.env.AWS_IMPORTS_BUCKET_ARN}`,
-            `${process.env.AWS_IMPORTS_BUCKET_ARN}/*`, 
-          ],
-        }),
-      ],
-    });
+    const actions: string[] = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ];
+    const resources = [
+      `${process.env.AWS_IMPORTS_BUCKET_ARN}`,
+      `${process.env.AWS_IMPORTS_BUCKET_ARN}/*`, 
+    ];
 
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/handlers/index.ts',
       runtime: Runtime.NODEJS_18_X,
     };
 
-    const importProductsFileLambda = new NodejsFunction(this, `${APP_PREFIX}-import-products-file-lambda`, {
-      ...sharedProps,
-      functionName: "importProductsFile",
-      handler: "importProductsFile",
-      environment: {
-        BUCKET_NAME: process.env.AWS_IMPORTS_BUCKET_NAME!,
+    const importProductsFileLambda = new NodejsFunction(
+      this, 
+      `${APP_PREFIX}-import-products-file-lambda`, {
+        ...sharedProps,
+        functionName: "importProductsFile",
+        handler: "importProductsFile",
+        environment: {
+          BUCKET_NAME: process.env.AWS_IMPORTS_BUCKET_NAME!,
+        }
       }
-    });
+    );
 
-    const importFileParserLambda = new NodejsFunction(this, `${APP_PREFIX}-import-file-parser-lambda`, {
-      ...sharedProps,
-      functionName: "importFileParser",
-      handler: "importFileParser",
-      environment: {
-        CSV_SEPARATOR: process.env.CSV_SEPARATOR!,
+    importProductsFileLambda.role?.attachInlinePolicy(
+      new Policy(this, `${APP_PREFIX}-import-products-policy`, {
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions,
+            resources,
+          }),
+        ],
+      })
+    );
+
+    const importFileParserLambda = new NodejsFunction(
+      this, 
+      `${APP_PREFIX}-import-file-parser-lambda`, {
+        ...sharedProps,
+        functionName: "importFileParser",
+        handler: "importFileParser",
+        environment: {
+          CSV_SEPARATOR: process.env.CSV_SEPARATOR!,
+        }
       }
-    });
+    );
 
-    importProductsFileLambda.role?.attachInlinePolicy(lambdaPolicy);
-    importFileParserLambda.role?.attachInlinePolicy(lambdaPolicy);
+    importFileParserLambda.role?.attachInlinePolicy(
+      new Policy(this, `${APP_PREFIX}-file-parser-policy`, {
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [...actions, "s3:DeleteObject"],
+            resources,
+          }),
+        ],
+      })
+    );
 
     const bucket = Bucket.fromBucketArn(
       this, 
