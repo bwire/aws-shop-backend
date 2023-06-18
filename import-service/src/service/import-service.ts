@@ -26,7 +26,10 @@ export class ImportService {
           if (Object.keys(data).length !== 0)
             console.log('CSV record', data)
         })
-        .on('end', resolve)
+        .on('end', () => {
+          console.log('input file parsed');
+          resolve();
+        })
         .on('error', (error: Error) => reject(error));
     }); 
 
