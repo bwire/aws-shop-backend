@@ -21,6 +21,7 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "types": ["node", "@types/jest"],
+    "outDir": "./out"
   },
   "exclude": [
     "node_modules",
