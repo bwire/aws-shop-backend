@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { StatusCodes } from 'http-status-codes';
-import { ImportService } from '../../src/service';
-import { importCSVFile } from '../../src/handlers/importProductsFile';
+import { ImportService } from '../src/service';
+import { importCSVFile } from '../src/handlers/importProductsFile';
 
 describe('importProductFiles tests', () => {
   const service = new ImportService();

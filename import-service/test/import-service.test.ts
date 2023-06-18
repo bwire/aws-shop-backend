@@ -1,4 +1,4 @@
-import { ImportService } from '../../src/service';
+import { ImportService } from '../src/service';
 
 describe('ImportService tests', () => {
   const service = new ImportService();
