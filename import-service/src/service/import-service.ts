@@ -1,5 +1,5 @@
 import { S3 } from 'aws-sdk';
-import { Readable, pipeline } from 'stream';
+import { Readable } from 'stream';
 export class ImportService {
   private s3 = new S3({signatureVersion: 'v4'});
 
