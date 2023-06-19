@@ -6,7 +6,4 @@ module.exports = {
   },
   testMatch: ['<rootDir>/test/*.test.(ts|tsx)'],
   roots: ['<rootDir>'],
-  moduleNameMapper: pathsToModuleNameMapper({
-    '~*': ['<rootDir>/../lib/*'],
-  }),
 };
