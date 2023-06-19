@@ -33,7 +33,7 @@ class ProductServiceStack extends Stack {
   }
 
   constructor(scope: Construct, props?: StackProps) {
-    const APP_PREFIX = "bw-aws-shop-backnd";
+    const APP_PREFIX = "bw-aws-shop-backend";
     super(scope, `${APP_PREFIX}-stack`, props);
 
     const lambdaPolicy = new Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
@@ -62,18 +62,21 @@ class ProductServiceStack extends Stack {
       ...sharedProps,
       functionName: "getProductList",
       handler: "getAllProducts",
+      description: 'Returns list of available products',
     });
 
     const getProductByIdLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-by-id-lambda`, {
       ...sharedProps,
       functionName: "getProductById",
       handler: "getProductById",
+      description: 'Returns a single product data',
     });
 
     const createProductLambda = new NodejsFunction(this, `${APP_PREFIX}-create-product-lambda`, {
       ...sharedProps,
       functionName: "createProduct",
       handler: "createProduct", 
+      description: 'Creates a new product',
     });
 
     const catalogBatchProcessLambda = new NodejsFunction(this, `${APP_PREFIX}-catalog-batch-process-lambda`, {
