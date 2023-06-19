@@ -1,6 +1,6 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ProductService } from '../src/services/product-service';
-import { getProductList } from '../src/handlers/getProductList';
+import { makeGetAllProductsHandler } from '../src/handlers/getAllProducts';
 import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
 import { StatusCodes } from 'http-status-codes';
 
@@ -27,7 +27,7 @@ describe('getProductList tests', () => {
     }];
 
     const spyFn = jest.spyOn(service, "getAllProducts").mockResolvedValue(products);
-    const result: APIGatewayProxyResult =  await getProductList(service)();
+    const result: APIGatewayProxyResult =  await makeGetAllProductsHandler(service)();
 
     console.log('result', result);
     
@@ -39,7 +39,7 @@ describe('getProductList tests', () => {
 
   test('to handle error', async () => {
     const spyFn = jest.spyOn(service, "getAllProducts").mockRejectedValue(new Error('Test error'));
-    const result: APIGatewayProxyResult = await getProductList(service)();
+    const result: APIGatewayProxyResult = await makeGetAllProductsHandler(service)();
     
     expect(spyFn).toBeCalledTimes(1);
     expect(result.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); 

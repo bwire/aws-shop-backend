@@ -6,7 +6,7 @@ import {
   ProductService 
 } from "../services/product-service";
 
-export const getSingleProduct = (productService: ProductService) => 
+export const makeGetProductByIdHandler = (productService: ProductService) => 
   async (event: ProductByIdEvent): Promise<APIGatewayProxyResult> => {
     try {
       console.log('Incoming request', event);

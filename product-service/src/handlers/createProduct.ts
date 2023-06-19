@@ -12,7 +12,7 @@ const ProductSchema = z.object({
   price: z.number().nonnegative().gt(0),
 });
 
-export const addProduct = (productService: ProductService) => 
+export const makeCreateProductHandler = (productService: ProductService) => 
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
       console.log('Incoming request', event); 

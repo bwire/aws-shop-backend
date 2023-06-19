@@ -1,6 +1,6 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ProductService } from '../src/services/product-service';
-import { getSingleProduct } from '../src/handlers/getProductById';
+import { makeGetProductByIdHandler } from '../src/handlers/getProductById';
 import { ProductByIdEvent } from '../src/services/product-service';
 import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
 import { StatusCodes } from 'http-status-codes';
@@ -26,7 +26,7 @@ describe('getProductById tests', () => {
     };
 
     const spyFn = jest.spyOn(service, "getProductById").mockResolvedValue(product);
-    const result: APIGatewayProxyResult =  await getSingleProduct(service)(eventParams);
+    const result: APIGatewayProxyResult =  await makeGetProductByIdHandler(service)(eventParams);
 
     expect(spyFn).toBeCalledTimes(1);
     expect(spyFn).toBeCalledWith('123');
@@ -36,7 +36,7 @@ describe('getProductById tests', () => {
 
   test('product not found - to handle error', async () => {
     const spyFn = jest.spyOn(service, "getProductById").mockImplementation(jest.fn());
-    const result: APIGatewayProxyResult = await getSingleProduct(service)(eventParams);
+    const result: APIGatewayProxyResult = await makeGetProductByIdHandler(service)(eventParams);
     
     expect(spyFn).toBeCalledTimes(1);
     expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST); 
@@ -45,7 +45,7 @@ describe('getProductById tests', () => {
 
   test('to handle error', async () => {
     const spyFn = jest.spyOn(service, "getProductById").mockRejectedValue(new Error('Test error'));
-    const result: APIGatewayProxyResult = await getSingleProduct(service)(eventParams);
+    const result: APIGatewayProxyResult = await makeGetProductByIdHandler(service)(eventParams);
     
     expect(spyFn).toBeCalledTimes(1);
     expect(result.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); 

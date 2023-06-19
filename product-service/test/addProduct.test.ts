@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { ProductService } from '../src/services/product-service';
-import { addProduct } from '../src/handlers/addProduct';
+import { makeCreateProductHandler } from '../src/handlers/createProduct';
 import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
 import { StatusCodes } from 'http-status-codes';
 
@@ -22,7 +22,7 @@ describe('addProduct tests', () => {
   test('create product, return a valid result', async () => {
     const eventParams: APIGatewayProxyEvent = { body: JSON.stringify(product) } as any;
     const spyFn = jest.spyOn(service, "createProduct").mockResolvedValue(product);
-    const result: APIGatewayProxyResult =  await addProduct(service)(eventParams);
+    const result: APIGatewayProxyResult =  await makeCreateProductHandler(service)(eventParams);
 
     expect(spyFn).toBeCalledTimes(1);
     expect(spyFn).toBeCalledWith(product);
@@ -33,7 +33,7 @@ describe('addProduct tests', () => {
   test('create product, no body - error thrown', async () => {
     const eventParams: APIGatewayProxyEvent = {} as any;
     const spyFn = jest.spyOn(service, "createProduct").mockResolvedValue(product);
-    const result: APIGatewayProxyResult =  await addProduct(service)(eventParams);
+    const result: APIGatewayProxyResult =  await makeCreateProductHandler(service)(eventParams);
 
     expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST); 
     expect(result.body).toBe(JSON.stringify({ message: 'Payload is empty or invalid'}));
@@ -42,7 +42,7 @@ describe('addProduct tests', () => {
   test('create product, incorrect body - error thrown', async () => {
     const eventParams: APIGatewayProxyEvent = { body: JSON.stringify({ count: 1}) } as any;
     const spyFn = jest.spyOn(service, "createProduct").mockResolvedValue(product);
-    const result: APIGatewayProxyResult =  await addProduct(service)(eventParams);
+    const result: APIGatewayProxyResult =  await makeCreateProductHandler(service)(eventParams);
 
     expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST); 
     expect(result.body).toBe(JSON.stringify({ message: 'Payload is empty or invalid'}));
