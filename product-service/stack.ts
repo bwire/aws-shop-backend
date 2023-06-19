@@ -73,7 +73,14 @@ class ProductServiceStack extends Stack {
     const createProductLambda = new NodejsFunction(this, `${APP_PREFIX}-create-product-lambda`, {
       ...sharedProps,
       functionName: "createProduct",
-      handler: "createProduct",  
+      handler: "createProduct", 
+    });
+
+    const catalogBatchProcessLambda = new NodejsFunction(this, `${APP_PREFIX}-catalog-batch-process-lambda`, {
+      ...sharedProps,
+      functionName: "catalogBatchProcess",
+      handler: "catalogBatchProcess", 
+      description: 'Batch processes products data received from SQS queue',  
     });
 
     getProductListLambda.role?.attachInlinePolicy(lambdaPolicy);

@@ -4,6 +4,7 @@ import { getSingleProduct } from './getProductById';
 import { addProduct } from './addProduct';
 import { DynamoDbRepository } from "../services/repository/dynamodb-repository";
 import { PostgresRepository } from "../services/repository/postgres-repository";
+import { catalogBatchProcessHandler } from "./catalogBatchProcess";
 
 const productService = process.env.USE_NOSQL_DB === 'true' 
   ? new ProductService(new DynamoDbRepository()) 
@@ -12,3 +13,4 @@ const productService = process.env.USE_NOSQL_DB === 'true'
 export const getAllProducts = getProductList(productService);
 export const getProductById = getSingleProduct(productService);
 export const createProduct = addProduct(productService);
+export const catalogBatchProcess = catalogBatchProcessHandler(productService);
