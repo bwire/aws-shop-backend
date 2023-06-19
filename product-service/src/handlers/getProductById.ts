@@ -1,9 +1,8 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
+import { errorResponse, successResponse } from './utils';
 import { 
-  ProductByIdEvent, 
-  errorResponse, 
-  successResponse, 
+  ProductByIdEvent,  
   ProductService 
 } from "../services/product-service";
 
