@@ -3,8 +3,9 @@ import 'source-map-support/register';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
-import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { 
   HttpApi, 
@@ -59,6 +60,12 @@ class ImportServiceStack extends Stack {
       })
     );
 
+    const queue = Queue.fromQueueArn(
+      this, 
+      `${APP_PREFIX}-import-sqs-queue`, 
+      process.env.AWS_IMPORT_SQS_QUEUE_ARN!
+    );
+
     const importFileParserLambda = new NodejsFunction(
       this, 
       `${APP_PREFIX}-import-file-parser-lambda`, {
@@ -67,6 +74,7 @@ class ImportServiceStack extends Stack {
         handler: "importFileParser",
         environment: {
           CSV_SEPARATOR: process.env.CSV_SEPARATOR!,
+          IMPORT_QUEUE_URL: queue.queueUrl,
         }
       }
     );
@@ -83,6 +91,8 @@ class ImportServiceStack extends Stack {
       })
     );
 
+    queue.grantSendMessages(importFileParserLambda);
+    
     const bucket = Bucket.fromBucketArn(
       this, 
       `${APP_PREFIX}-s3-import-service-bucket`, 
