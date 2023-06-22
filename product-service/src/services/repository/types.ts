@@ -1,13 +1,15 @@
-export interface Product {
-  id: string,
+export interface NewProductData {
   title: string,
   description: string,
   price: number,
   count: number,
 };
+export interface Product extends NewProductData{
+  id: string,
+};
 
 export interface ProductsRepository {
   getProductById: (id: string) => Promise<Product | undefined>,
   getAllProducts: () => Promise<Product[]>,
-  createProduct: (payload: Product) => Promise<Product | undefined>,
+  createProduct: (payload: NewProductData) => Promise<Product | undefined>,
 }

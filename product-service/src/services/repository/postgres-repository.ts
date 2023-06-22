@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { v4 as uuid } from 'uuid';
-import { Product, ProductsRepository} from './types';
+import { NewProductData, Product, ProductsRepository} from './types';
 
 export class PostgresRepository implements ProductsRepository {
   private async getClient(): Promise<Client> {
@@ -49,7 +49,7 @@ export class PostgresRepository implements ProductsRepository {
     }
   }
 
-  async createProduct(payload: Product): Promise<Product | undefined> {
+  async createProduct(payload: NewProductData): Promise<Product | undefined> {
     const client = await this.getClient();
     const { title, description, price, count } = payload;
     const id = uuid();
@@ -70,12 +70,12 @@ export class PostgresRepository implements ProductsRepository {
       });
       await client.query({ 
         text: queryTextStocks, 
-        values: [id, price],
+        values: [id, count],
       });
       
       await client.query('COMMIT');
 
-      return payload;
+      return {id, ...payload};
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk';
-import { Product, ProductsRepository} from './types';
+import { NewProductData, Product, ProductsRepository} from './types';
 import { v4 as uuid } from 'uuid';
 export class DynamoDbRepository implements ProductsRepository {
   private dynamo = new DynamoDB.DocumentClient();
@@ -45,7 +45,7 @@ export class DynamoDbRepository implements ProductsRepository {
     } as Product
   };
 
-  async createProduct(payload: Product): Promise<Product | undefined> {
+  async createProduct(payload: NewProductData): Promise<Product | undefined> {
     const { title, description, price, count } = payload;
     const id = uuid().toString();
     
@@ -67,6 +67,6 @@ export class DynamoDbRepository implements ProductsRepository {
       return  
     }
      
-    return { ...payload};
+    return { id, ...payload};
   }
 }
