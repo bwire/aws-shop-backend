@@ -1,4 +1,4 @@
-import { S3 } from 'aws-sdk';
+import { S3, SQS } from 'aws-sdk';
 import { Readable } from 'stream';
 export class ImportService {
   private s3 = new S3({signatureVersion: 'v4'});
@@ -12,6 +12,9 @@ export class ImportService {
 
   async processCSV(bucket: string, key: string): Promise<void> {
     const csv = require('csv-parser');
+    const sqs = new SQS({
+      apiVersion: 'latest',
+    })
 
     const data = await this.s3.getObject({
       Bucket: bucket,
@@ -23,8 +26,18 @@ export class ImportService {
         .from(data.Body as Buffer)
         .pipe(csv({ separator: process.env.CSV_SEPARATOR}))
         .on('data', (data: object) => {
-          if (Object.keys(data).length !== 0)
-            console.log('CSV record', data)
+          if (Object.keys(data).length !== 0) {
+            console.log('CSV record', data);
+
+            sqs.sendMessage({
+              QueueUrl: process.env.IMPORT_QUEUE_URL!,
+              MessageBody: JSON.stringify(data),
+            }, (err) => {
+              if (err) {
+                console.log('SQS message error', err)
+              }
+            });
+          }
         })
         .on('end', () => {
           console.log('file parsed');
