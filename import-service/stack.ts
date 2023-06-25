@@ -34,6 +34,9 @@ class ImportServiceStack extends Stack {
     const sharedProps: Partial<NodejsFunctionProps> = {
       entry: './src/handlers/index.ts',
       runtime: Runtime.NODEJS_18_X,
+      environment: {
+        AWS_MAIN_REGION: process.env.AWS_MAIN_REGION!,
+      }
     };
 
     const importProductsFileLambda = new NodejsFunction(

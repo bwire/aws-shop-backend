@@ -1,38 +1,46 @@
-import { S3, SQS } from 'aws-sdk';
+import { s3Client, sqsClient } from '../aws-clients';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
-export class ImportService {
-  private s3 = new S3({signatureVersion: 'v4'});
+import * as csv from "csv-parser";
+import { 
+  CopyObjectCommand, 
+  DeleteObjectCommand, 
+  GetObjectCommand, 
+  GetObjectCommandOutput, 
+  PutObjectCommand 
+} from '@aws-sdk/client-s3';
+import { SendMessageCommand } from '@aws-sdk/client-sqs';
 
-  importProductsFile(name: string): string {
-    return this.s3.getSignedUrl('putObject', {
-      Bucket: process.env.BUCKET_NAME,
-      Key: `uploaded/${name}`,
-    });
+export class ImportService {
+  async importProductsFile(name: string): Promise<string> {
+    return await getSignedUrl(s3Client,
+      new PutObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: `uploaded/${name}`,
+        ContentType: 'text/csv',
+      }), { expiresIn: 30 }
+    ); 
   };
 
   async processCSV(bucket: string, key: string): Promise<void> {
-    const csv = require('csv-parser');
-    const sqs = new SQS({
-      apiVersion: 'latest',
-    })
-
-    const data = await this.s3.getObject({
+    const data: GetObjectCommandOutput = await s3Client.send(new GetObjectCommand({
       Bucket: bucket,
       Key: key,
-    }).promise();
+    }));
+
+    const readable = data.Body as Readable;
 
     await new Promise<void>((resolve, reject) => {
-      Readable
-        .from(data.Body as Buffer)
+      readable
         .pipe(csv({ separator: process.env.CSV_SEPARATOR}))
-        .on('data', (data: object) => {
+        .on('data', (data) => {
           if (Object.keys(data).length !== 0) {
             console.log('CSV record', data);
 
-            sqs.sendMessage({
+            sqsClient.send(new SendMessageCommand({
               QueueUrl: process.env.IMPORT_QUEUE_URL!,
               MessageBody: JSON.stringify(data),
-            }, (err) => {
+            }), (err) => {
               if (err) {
                 console.log('SQS message error', err)
               }
@@ -47,18 +55,18 @@ export class ImportService {
     }); 
 
     // move file only after the stream is finished correctly (no error thrown)
-    await this.s3.copyObject({
+    await s3Client.send(new CopyObjectCommand({
       Bucket: bucket,
       CopySource: `${bucket}/${key}`,
       Key: key.replace('uploaded', 'parsed'),
-    }).promise();
+    }));
 
     console.log('file copied to parsed folder');
 
-    await this.s3.deleteObject({
+    await s3Client.send(new DeleteObjectCommand({
       Bucket: bucket,
       Key: key,
-    }).promise();
+    }));
 
     console.log('initial file deleted');
   }
