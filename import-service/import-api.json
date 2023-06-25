@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Import products Http API",
+    "description": "Import products Http API (Task 5 S3 Integration)",
+    "contact": {
+      "name": "Yevheniy Gandzyuck",
+      "email": "e.barbedwire@gmail.com"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/bwire/T3-serverless/1.0.0",
+      "description": "SwaggerHub API Auto Mocking"
+    }
+  ],
+  "paths": {
+    "/import": {
+      "get": {
+        "summary": "Returns aws presigned url to S3 resource",
+        "tags": [
+          "Import products data"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": ".csv file name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Action complete"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error_response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": { 
+    "schemas": {
+      "error_response": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string",
+            "example": "Very ugly error"
+          }
+        }
+      }
+    }
+  }
+}

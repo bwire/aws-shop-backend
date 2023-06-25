@@ -1,0 +1,32 @@
+{
+  "name": "import-service",
+  "version": "0.1.0",
+  "bin": {
+    "import-service": "bin/import-service.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "deploy": "cdk deploy"
+  },
+  "devDependencies": {
+    "@aws-cdk/aws-apigatewayv2-alpha": "^2.82.0-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.82.0-alpha.0",
+    "@types/aws-lambda": "^8.10.118",
+    "@types/jest": "^29.5.1",
+    "@types/node": "20.1.7",
+    "aws-cdk-lib": "^2.82.0",
+    "aws-sdk": "^2.1397.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "~5.0.4"
+  },
+  "dependencies": {
+    "constructs": "^10.0.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.1.4",
+    "http-status-codes": "^2.2.0",
+    "source-map-support": "^0.5.21"
+  }
+}
