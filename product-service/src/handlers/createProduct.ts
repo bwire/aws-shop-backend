@@ -1,4 +1,7 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { 
+  APIGatewayProxyEvent, 
+  APIGatewayProxyResult 
+} from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 import { errorResponse, successResponse } from './utils';

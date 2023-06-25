@@ -1,7 +1,7 @@
-import { SQSRecord } from "aws-lambda";
 import { PublishCommand } from "@aws-sdk/client-sns";
+import { SQSRecord } from "aws-lambda";
+import { snsClient } from '../../aws-clients';
 import { NewProductData, Product, ProductsRepository } from '../repository/types';
-import { snsClient } from '../lib'; 
 export class ProductService {
   constructor(private repository: ProductsRepository) {}
 
@@ -17,25 +17,22 @@ export class ProductService {
     return this.repository.createProduct(payload);
   }
 
-  async batchProcessProducts(records: SQSRecord[]) {
+  async batchProcessProducts(records: SQSRecord[]): Promise<void> {
     for (const record of records) {
-      try {
-        //const newProduct = await this.createProduct(JSON.parse(record.body));
-        const newProduct = JSON.parse(record.body);
-
+      const newProduct = await this.createProduct(JSON.parse(record.body));
+  
+      if (newProduct) {
         await snsClient.send(new PublishCommand({
           Subject: 'New product arrived',
           Message: JSON.stringify(newProduct),
           TopicArn: process.env.SNS_TOPIC_ARN,
-          // MessageAttributes: {
-          //   count: {
-          //     DataType: 'Number',
-          //     StringValue: newProduct.count,
-          //   }
-          // }
+          MessageAttributes: {
+            count: {
+              DataType: 'Number',
+              StringValue: String(newProduct.count),
+            }
+          }
         }));
-      } catch (error) {
-        console.log("Batch processing error", error);  
       }
     }
   }

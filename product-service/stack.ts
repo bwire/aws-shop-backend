@@ -46,6 +46,7 @@ class ProductServiceStack extends Stack {
             "dynamodb:Scan",
             "dynamodb:Query",
             "dynamodb:PutItem",
+            "dynamodb:PartiQLInsert",
           ],
           resources: [
             `arn:aws:dynamodb:*:*:table/${process.env.DB_TABLE_PRODUCTS}`, 
@@ -90,8 +91,10 @@ class ProductServiceStack extends Stack {
       ...sharedProps,
       functionName: "catalogBatchProcess",
       handler: "catalogBatchProcess", 
-      description: 'Batch processes products data received from SQS queue',  
+      description: 'Batch processes products data received from SQS queue', 
+       
       environment: {
+        ...sharedProps.environment,
         SNS_TOPIC_ARN: snsTopic.topicArn,
         AWS_MAIN_REGION: process.env.AWS_MAIN_REGION!,
       }
@@ -103,12 +106,19 @@ class ProductServiceStack extends Stack {
       endpoint: process.env.SNS_EMAIL_REGULAR!,
       protocol: sns.SubscriptionProtocol.EMAIL,
       topic: snsTopic, 
-      //filterPolicy: { count: sns.SubscriptionFilter.numericFilter({lessThanOrEqualTo: 10}) }
+    });
+
+    new sns.Subscription(this, `${APP_PREFIX}-special-sns-subscription`, {
+      endpoint: process.env.SNS_EMAIL_SPECIAL!,
+      protocol: sns.SubscriptionProtocol.EMAIL,
+      topic: snsTopic, 
+      filterPolicy: { count: sns.SubscriptionFilter.numericFilter({ lessThanOrEqualTo: 10 }) }
     });
 
     getProductListLambda.role?.attachInlinePolicy(lambdaPolicy);
     getProductByIdLambda.role?.attachInlinePolicy(lambdaPolicy);
     createProductLambda.role?.attachInlinePolicy(lambdaPolicy);
+    catalogBatchProcessLambda.role?.attachInlinePolicy(lambdaPolicy);
 
     const importQueue = new sqs.Queue(this, `${APP_PREFIX}-import-sqs-queue`, {
       queueName: 'import-file-queue',

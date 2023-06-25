@@ -3,7 +3,7 @@ import {
   ProductService 
 } from "../services/product-service";
 
-export const makeCatalogBatchProcessHandler = (productService: ProductService): SQSHandler => 
+export const makeCatalogBatchProcessHandler = (productService: ProductService) => 
   async (event: SQSEvent): Promise<void> => {
     console.log('Incoming request', event);
 

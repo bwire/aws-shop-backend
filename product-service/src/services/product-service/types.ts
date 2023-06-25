@@ -1,9 +1,9 @@
-import { APIGatewayProxyEvent, APIGatewayProxyEventPathParameters } from "aws-lambda";
+import { APIGatewayEvent, APIGatewayProxyEventPathParameters } from "aws-lambda";
 
 export interface ProductByIdPathParams extends APIGatewayProxyEventPathParameters {
   productId: string,
 }
 
-export interface ProductByIdEvent extends APIGatewayProxyEvent {
+export interface ProductByIdEvent extends APIGatewayEvent {
   pathParameters: ProductByIdPathParams,
 }
