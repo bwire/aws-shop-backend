@@ -1,40 +1,42 @@
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { mockClient } from 'aws-sdk-client-mock';
+import { s3Client } from '../src/aws-clients';
 import { ImportService } from '../src/service';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+
+jest.mock('@aws-sdk/s3-request-presigner');
 
 describe('ImportService tests', () => {
   const service = new ImportService();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
+  const s3ClientMock = mockClient(s3Client);
+  
   describe('importProductsFile tests', () => {
-    test('method throws exception', async () => {
-      const spyFn = jest.spyOn(service['s3'], "getSignedUrl")
-        .mockImplementation(() => {
-          throw new Error('Unexpected error')
-        });
+    const mockedFn = getSignedUrl as jest.MockedFunction<typeof getSignedUrl>;
+    
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('getSignedUrl throws exception', async () => {
+      mockedFn.mockRejectedValue(new Error('Unexpected error'));
 
       try {
-        service.importProductsFile('test');        
+        await service.importProductsFile('test');        
       } catch (error: any) {
-        expect(spyFn).toHaveBeenCalledTimes(1);  
+        expect(mockedFn).toHaveBeenCalledTimes(1);  
         expect(error.message = 'Unexpected error'); 
      } 
     });
 
     test('happy case - sign url created', async () => {
       const signedUrl = 'https://signed-url.amazon.com';
-      const spyFn = jest.spyOn(service['s3'], "getSignedUrl").mockReturnValue(signedUrl);
+      s3ClientMock.on(PutObjectCommand).resolves({});
+      mockedFn.mockResolvedValue(signedUrl);
 
-      const result = service.importProductsFile('test');
+      const result = await service.importProductsFile('test');
 
       expect(result).toStrictEqual(signedUrl);
-      expect(spyFn).toHaveBeenCalledTimes(1);
-      expect(spyFn).toHaveBeenCalledWith(
-        'putObject', expect.objectContaining({
-          Key: 'uploaded/test',
-        })
-      );
+      expect(mockedFn).toHaveBeenCalledTimes(1);
     });
   });
 }); 

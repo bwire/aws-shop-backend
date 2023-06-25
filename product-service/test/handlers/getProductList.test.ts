@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../src/services/product-service';
-import { makeGetAllProductsHandler } from '../src/handlers/getAllProducts';
-import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
+import { ProductService } from '../../src/services/product-service';
+import { makeGetAllProductsHandler } from '../../src/handlers/getAllProducts';
+import { DynamoDbRepository } from '../../src/services/repository/dynamodb-repository';
 import { StatusCodes } from 'http-status-codes';
 
 describe('getProductList tests', () => {

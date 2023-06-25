@@ -1,8 +1,8 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { ProductService } from '../src/services/product-service';
-import { makeGetProductByIdHandler } from '../src/handlers/getProductById';
-import { ProductByIdEvent } from '../src/services/product-service';
-import { DynamoDbRepository } from '../src/services/repository/dynamodb-repository';
+import { ProductService } from '../../src/services/product-service';
+import { makeGetProductByIdHandler } from '../../src/handlers/getProductById';
+import { ProductByIdEvent } from '../../src/services/product-service';
+import { DynamoDbRepository } from '../../src/services/repository/dynamodb-repository';
 import { StatusCodes } from 'http-status-codes';
 
 describe('getProductById tests', () => {
