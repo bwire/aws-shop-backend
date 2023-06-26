@@ -69,7 +69,7 @@ export class DynamoDbRepository implements ProductsRepository {
         }]   
       }));  
     } catch (error) {
-      console.log('fucking error', error);
+      console.log('Transaction error', error);
       return  
     }
      

@@ -31,4 +31,5 @@ describe('catalogBatchProcess tests', () => {
       expect(error.message).toBe(JSON.stringify({ message: 'Unexpected error'}));  
     }
   });
-}); 
+});
+ 

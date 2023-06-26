@@ -91,8 +91,7 @@ class ProductServiceStack extends Stack {
       ...sharedProps,
       functionName: "catalogBatchProcess",
       handler: "catalogBatchProcess", 
-      description: 'Batch processes products data received from SQS queue', 
-       
+      description: 'Batch processes products data received from SQS queue',  
       environment: {
         ...sharedProps.environment,
         SNS_TOPIC_ARN: snsTopic.topicArn,
