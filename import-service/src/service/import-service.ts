@@ -35,8 +35,6 @@ export class ImportService {
         .pipe(csv({ separator: process.env.CSV_SEPARATOR}))
         .on('data', (data) => {
           if (Object.keys(data).length !== 0) {
-            console.log('CSV record', data);
-
             sqsClient.send(new SendMessageCommand({
               QueueUrl: process.env.IMPORT_QUEUE_URL!,
               MessageBody: JSON.stringify(data),
