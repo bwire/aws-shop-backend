@@ -1,16 +1,25 @@
-import { Construct } from 'constructs';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { config as envConfig } from 'dotenv';
 
 envConfig();
 class AuthServiceStack extends Stack {
-  constructor(scope: Construct, props?: StackProps) {
-    const APP_PREFIX = "bw-aws-shop-backend";
-    super(scope, `${APP_PREFIX}-stack`, props);
+  constructor() {
+    const MAIN_APP_PREFIX = "bw-aws-shop-backend";
+    const SERVICE_PREFIX = `${MAIN_APP_PREFIX}-auth`;
 
-    const basicAuthorizerLambda = new NodejsFunction(this, `${APP_PREFIX}-basic-authorizer-lambda`, {
+    super(
+      new App(), 
+      `${SERVICE_PREFIX}-stack`, {
+        description: "This stack includes resource for authorization inside aws-shop-backend application"
+      }
+    );
+
+    new NodejsFunction(this, `${SERVICE_PREFIX}-basic-authorizer-lambda`, {
       functionName: "basicAuthorizer",
+      entry: './src/handlers/index.ts',
+      runtime: Runtime.NODEJS_18_X,
       handler: "basicAuthorizer", 
       description: 'Default authorizer (Basic authorization)',
       environment: {
@@ -20,6 +29,4 @@ class AuthServiceStack extends Stack {
   }
 }
 
-new AuthServiceStack(new App(), {
-  description: "This stack includes resource for authorization inside shop-backend application"
-});
+new AuthServiceStack();
