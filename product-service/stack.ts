@@ -1,4 +1,3 @@
-import { Construct } from 'constructs';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -35,11 +34,18 @@ class ProductServiceStack extends Stack {
     }
   }
 
-  constructor(scope: Construct, props?: StackProps) {
-    const APP_PREFIX = "bw-aws-shop-backend";
-    super(scope, `${APP_PREFIX}-stack`, props);
+  constructor() {
+    const MAIN_APP_PREFIX = "bw-aws-shop-backend";
+    const SERVICE_PREFIX = `${MAIN_APP_PREFIX}-product`;
 
-    const lambdaPolicy = new Policy(this, `${APP_PREFIX}-dynamodb-read-policy`, {
+    super(
+      new App(), 
+      `${SERVICE_PREFIX}-stack`, {
+        description: "This stack includes temporary resources needed to deploy aws-shop-backend application"
+      }
+    );
+
+    const lambdaPolicy = new Policy(this, `${SERVICE_PREFIX}-dynamodb-read-policy`, {
       statements: [
         new PolicyStatement({
           actions: [
@@ -62,32 +68,32 @@ class ProductServiceStack extends Stack {
       environment: this.getEnvironment(),
     };
 
-    const getProductListLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-list-lambda`, {
+    const getProductListLambda = new NodejsFunction(this, `${SERVICE_PREFIX}-get-product-list-lambda`, {
       ...sharedProps,
       functionName: "getProductList",
       handler: "getAllProducts",
       description: 'Returns list of available products',
     });
 
-    const getProductByIdLambda = new NodejsFunction(this, `${APP_PREFIX}-get-product-by-id-lambda`, {
+    const getProductByIdLambda = new NodejsFunction(this, `${SERVICE_PREFIX}-get-product-by-id-lambda`, {
       ...sharedProps,
       functionName: "getProductById",
       handler: "getProductById",
       description: 'Returns a single product data',
     });
 
-    const createProductLambda = new NodejsFunction(this, `${APP_PREFIX}-create-product-lambda`, {
+    const createProductLambda = new NodejsFunction(this, `${SERVICE_PREFIX}-create-product-lambda`, {
       ...sharedProps,
       functionName: "createProduct",
       handler: "createProduct", 
       description: 'Creates a new product',
     });
 
-    const snsTopic = new sns.Topic(this, `${APP_PREFIX}-import-sns-topic`, {
+    const snsTopic = new sns.Topic(this, `${SERVICE_PREFIX}-import-sns-topic`, {
       topicName: 'import-product-topic',
     });
 
-    const catalogBatchProcessLambda = new NodejsFunction(this, `${APP_PREFIX}-catalog-batch-process-lambda`, {
+    const catalogBatchProcessLambda = new NodejsFunction(this, `${SERVICE_PREFIX}-catalog-batch-process-lambda`, {
       ...sharedProps,
       functionName: "catalogBatchProcess",
       handler: "catalogBatchProcess", 
@@ -101,13 +107,13 @@ class ProductServiceStack extends Stack {
 
     snsTopic.grantPublish(catalogBatchProcessLambda);
 
-    new sns.Subscription(this, `${APP_PREFIX}-regular-sns-subscription`, {
+    new sns.Subscription(this, `${SERVICE_PREFIX}-regular-sns-subscription`, {
       endpoint: process.env.SNS_EMAIL_REGULAR!,
       protocol: sns.SubscriptionProtocol.EMAIL,
       topic: snsTopic, 
     });
 
-    new sns.Subscription(this, `${APP_PREFIX}-special-sns-subscription`, {
+    new sns.Subscription(this, `${SERVICE_PREFIX}-special-sns-subscription`, {
       endpoint: process.env.SNS_EMAIL_SPECIAL!,
       protocol: sns.SubscriptionProtocol.EMAIL,
       topic: snsTopic, 
@@ -119,7 +125,7 @@ class ProductServiceStack extends Stack {
     createProductLambda.role?.attachInlinePolicy(lambdaPolicy);
     catalogBatchProcessLambda.role?.attachInlinePolicy(lambdaPolicy);
 
-    const importQueue = new sqs.Queue(this, `${APP_PREFIX}-import-sqs-queue`, {
+    const importQueue = new sqs.Queue(this, `${SERVICE_PREFIX}-import-sqs-queue`, {
       queueName: 'import-file-queue',
     });
 
@@ -127,7 +133,7 @@ class ProductServiceStack extends Stack {
       batchSize: Number(process.env.SQS_BATCH_SIZE!),
     }));
 
-    const api = new HttpApi(this, `${APP_PREFIX}-products-api`, {
+    const api = new HttpApi(this, `${SERVICE_PREFIX}-products-api`, {
       corsPreflight: {
         allowHeaders: ["*"],
         allowOrigins: ["*"],
@@ -136,21 +142,21 @@ class ProductServiceStack extends Stack {
     });
 
     api.addRoutes({
-      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductLst-integration`, getProductListLambda),
+      integration: new HttpLambdaIntegration(`${SERVICE_PREFIX}-getProductLst-integration`, getProductListLambda),
       path: "/products",
       methods: [HttpMethod.GET]
     });
 
 
     api.addRoutes({
-      integration: new HttpLambdaIntegration(`${APP_PREFIX}-getProductById-integration`, getProductByIdLambda, {
+      integration: new HttpLambdaIntegration(`${SERVICE_PREFIX}-getProductById-integration`, getProductByIdLambda, {
         parameterMapping: new ParameterMapping().appendQueryString('productId', MappingValue.requestPathParam('productId'))}),
       path: "/products/{productId}",
       methods: [HttpMethod.GET]
     });
 
     api.addRoutes({
-      integration: new HttpLambdaIntegration(`${APP_PREFIX}-createProduct-integration`, createProductLambda),
+      integration: new HttpLambdaIntegration(`${SERVICE_PREFIX}-createProduct-integration`, createProductLambda),
         path: "/products",
         methods: [HttpMethod.POST]
     });
@@ -158,6 +164,4 @@ class ProductServiceStack extends Stack {
 }
 
 // TODO should be returned
-new ProductServiceStack(new App(), {
-  description: "This stack includes temporary resources needed to deploy aws-shop-backend application"
-});
+new ProductServiceStack();
