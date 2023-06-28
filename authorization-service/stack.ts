@@ -1,7 +1,9 @@
 import { Construct } from 'constructs';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { config as envConfig } from 'dotenv';
 
+envConfig();
 class AuthServiceStack extends Stack {
   constructor(scope: Construct, props?: StackProps) {
     const APP_PREFIX = "bw-aws-shop-backend";
@@ -11,6 +13,9 @@ class AuthServiceStack extends Stack {
       functionName: "basicAuthorizer",
       handler: "basicAuthorizer", 
       description: 'Default authorizer (Basic authorization)',
+      environment: {
+        BWIRE: process.env.BWIRE!
+      }
     });
   }
 }
