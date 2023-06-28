@@ -1,7 +1,7 @@
 import { s3Client, sqsClient } from '../aws-clients';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
-import * as csv from "csv-parser";
+import csv from "csv-parser";
 import { 
   CopyObjectCommand, 
   DeleteObjectCommand, 
