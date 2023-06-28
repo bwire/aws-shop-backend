@@ -8,4 +8,6 @@ Includes:
 
 [Import-service](https://github.com/bwire/aws-shop-backend/blob/709bcd37a841fedaa4bd725457ef54262ffbd673/README.md#L7)
 
+[Authorization-service](https://github.com/bwire/aws-shop-backend/blob/5216ebee20662aae4cfc31f1b53954b9aa6bcc3e/README.md#L11)
+
 
