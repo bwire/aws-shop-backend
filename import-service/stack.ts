@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
-import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Effect, Policy, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Runtime, Function } from "aws-cdk-lib/aws-lambda";
@@ -121,7 +121,8 @@ class ImportServiceStack extends Stack {
         allowHeaders: ["*"],
         allowOrigins: ["*"],
         allowMethods: [CorsHttpMethod.ANY],
-      }
+      }, 
+      
     });
 
     const authLambda = Function.fromFunctionName(
@@ -129,16 +130,21 @@ class ImportServiceStack extends Stack {
       `${SERVICE_PREFIX}-auth-lambda`, 
       'basicAuthorizer'
     );
-
+    
     const authorizer: IHttpRouteAuthorizer = new HttpLambdaAuthorizer(
       `${SERVICE_PREFIX}-basic-authorizer`,
       authLambda, {
         authorizerName: 'main-basic-authorizer',
         responseTypes: [
-          HttpLambdaResponseType.IAM,
-        ]  
+          HttpLambdaResponseType.SIMPLE,
+        ],
+        resultsCacheTtl: Duration.seconds(0),  
       }
     );
+     
+    authLambda.addPermission('PermitAPIGInvocation', {
+      principal: new ServicePrincipal(api.url!),
+    });
 
     api.addRoutes({
       integration: new HttpLambdaIntegration(

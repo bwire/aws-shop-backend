@@ -23,7 +23,7 @@ class AuthServiceStack extends Stack {
       handler: "basicAuthorizer", 
       description: 'Default authorizer (Basic authorization)',
       environment: {
-        BWIRE: process.env.BWIRE!
+        bwire: process.env.BWIRE!
       }
     });
   }
