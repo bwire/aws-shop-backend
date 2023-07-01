@@ -1,17 +1,26 @@
-import { DynamoDB } from 'aws-sdk';
-import { Product, ProductsRepository} from './types';
+import { 
+  DynamoDBClient, 
+  QueryCommand, 
+  QueryCommandOutput, 
+  ScanCommand, 
+  ScanCommandOutput,
+  ExecuteTransactionCommand 
+} from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { NewProductData, Product, ProductsRepository} from './types';
 import { v4 as uuid } from 'uuid';
+
 export class DynamoDbRepository implements ProductsRepository {
-  private dynamo = new DynamoDB.DocumentClient();
-
+  private dynamoClient = new DynamoDBClient({ region: process.env.AWS_MAIN_REGION });
   async getAllProducts(): Promise<Product[]> {
-    console.log('getting products');
-    
-    const productsScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_PRODUCTS! }).promise();
-    const stocksScanResult = await this.dynamo.scan({ TableName: process.env.TABLE_STOCKS! }).promise();
+    const productsScanOutput: ScanCommandOutput = await this.dynamoClient
+      .send(new ScanCommand({ TableName: process.env.TABLE_PRODUCTS! }));
 
-    const products = productsScanResult.Items!;
-    const stocks = stocksScanResult.Items!;
+    const stocksScanResult: ScanCommandOutput = await this.dynamoClient
+      .send(new ScanCommand({ TableName: process.env.TABLE_STOCKS! }));
+
+    const products = productsScanOutput.Items!.map(i => unmarshall(i));
+    const stocks = stocksScanResult.Items!.map(i => unmarshall(i));
 
     return products.map(p => {
       const stockRecord = stocks.find(s => s.product_id === p.id);
@@ -23,50 +32,47 @@ export class DynamoDbRepository implements ProductsRepository {
   }
 
   async getProductById(id: string): Promise<Product | undefined> {
-    const productsQueryResult = await this.dynamo.query({
-      ExpressionAttributeValues: { ":id": id }, 
+    const productsQueryResult: QueryCommandOutput = await this.dynamoClient.send(new QueryCommand({
+      ExpressionAttributeValues: { ":id": {'S': id} }, 
       KeyConditionExpression: "id = :id", 
       TableName: process.env.TABLE_PRODUCTS!
-     }).promise();
+    }));
     
     if (productsQueryResult.Items!.length === 0) {
       return; 
     }
 
-    const stocksQueryResult = await this.dynamo.query({
-      ExpressionAttributeValues: { ":id": id }, 
+    const stocksQueryResult: QueryCommandOutput = await this.dynamoClient.send(new QueryCommand({
+      ExpressionAttributeValues: { ":id": {'S': id} }, 
       KeyConditionExpression: "product_id = :id", 
       TableName: process.env.TABLE_STOCKS!
-    }).promise();
+    }));
 
     return {
-      ...productsQueryResult.Items![0],
-      count: stocksQueryResult.Items!.length > 0 ? stocksQueryResult.Items![0].count : 0,
+      ...unmarshall(productsQueryResult.Items![0]),
+      count: stocksQueryResult.Items!.length > 0 ? unmarshall(stocksQueryResult.Items![0]).count : 0,
     } as Product
   };
 
-  async createProduct(payload: Product): Promise<Product | undefined> {
+  async createProduct(payload: NewProductData): Promise<Product | undefined> {
     const { title, description, price, count } = payload;
     const id = uuid().toString();
     
     try {
-      await this.dynamo.transactWrite({
-        TransactItems: [{
-          Put: {
-            TableName: process.env.TABLE_PRODUCTS!,
-            Item: { id, title, description, price },
-          }
+      await this.dynamoClient.send(new ExecuteTransactionCommand({
+        TransactStatements: [{
+          Statement: `INSERT INTO ${process.env.TABLE_PRODUCTS} value {'id': ?, 'title': ?, 'description': ?, 'price': ?}`,
+          Parameters: [{ 'S': id }, { 'S': title }, { 'S': description }, { 'N': price.toString() }]
         }, {
-          Put: {
-            TableName: process.env.TABLE_STOCKS!,
-            Item: { product_id: id, count },  
-          }
-        }]
-      }).promise();  
+          Statement: `INSERT INTO ${process.env.TABLE_STOCKS} value {'product_id': ?, 'count': ?}`,
+          Parameters: [{ 'S': id }, { 'N': count.toString() }]
+        }]   
+      }));  
     } catch (error) {
+      console.log('Transaction error', error);
       return  
     }
      
-    return { ...payload};
+    return { id, ...payload};
   }
 }

@@ -1,13 +1,12 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
+import { errorResponse, successResponse } from './utils';
 import { 
-  ProductByIdEvent, 
-  errorResponse, 
-  successResponse, 
+  ProductByIdEvent,  
   ProductService 
 } from "../services/product-service";
 
-export const getSingleProduct = (productService: ProductService) => 
+export const makeGetProductByIdHandler = (productService: ProductService) => 
   async (event: ProductByIdEvent): Promise<APIGatewayProxyResult> => {
     try {
       console.log('Incoming request', event);

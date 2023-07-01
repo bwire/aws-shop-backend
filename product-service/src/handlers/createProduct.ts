@@ -1,11 +1,11 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { 
+  APIGatewayProxyEvent, 
+  APIGatewayProxyResult 
+} from "aws-lambda";
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
-import { 
-  errorResponse, 
-  successResponse, 
-  ProductService 
-} from "../services/product-service";
+import { errorResponse, successResponse } from './utils';
+import { ProductService } from "../services/product-service";
 import { Product } from "../services/repository/types";
 
 const ProductSchema = z.object({
@@ -15,7 +15,7 @@ const ProductSchema = z.object({
   price: z.number().nonnegative().gt(0),
 });
 
-export const addProduct = (productService: ProductService) => 
+export const makeCreateProductHandler = (productService: ProductService) => 
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
       console.log('Incoming request', event); 

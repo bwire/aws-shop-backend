@@ -11,7 +11,7 @@ describe('importProductFiles tests', () => {
   });
 
   test('no name provided in params - throw an error', async () => {
-    const spyFn = jest.spyOn(service, "importProductsFile").mockReturnValue('');
+    const spyFn = jest.spyOn(service, "importProductsFile").mockResolvedValue('');
     const eventParams: APIGatewayProxyEvent = { queryStringParameters: {} } as any;
     
     const result: APIGatewayProxyResult =  await importCSVFile(service)(eventParams);
@@ -38,7 +38,7 @@ describe('importProductFiles tests', () => {
 
   test('happy case - url returned', async () => {
     const signedUrl = 'https://signed-url.amazon.com';
-    const spyFn = jest.spyOn(service, "importProductsFile").mockReturnValue(signedUrl);
+    const spyFn = jest.spyOn(service, "importProductsFile").mockResolvedValue(signedUrl);
     const eventParams: APIGatewayProxyEvent = { queryStringParameters: { name: 'test' } } as any;
     
     const result: APIGatewayProxyResult =  await importCSVFile(service)(eventParams);
