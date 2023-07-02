@@ -31,3 +31,4 @@ export const makeBasicAuthorizer = (): APIGatewayRequestSimpleAuthorizerHandlerV
       callback(`Unauthorized: ${error.message}`)  
     }
   }
+  
