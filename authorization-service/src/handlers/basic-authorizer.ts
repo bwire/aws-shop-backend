@@ -5,14 +5,13 @@ import {
   Callback,
   Context,
 } from "aws-lambda";
-import { log } from "console";
 
 export const makeBasicAuthorizer = (): APIGatewayRequestSimpleAuthorizerHandlerV2 => (
   event: APIGatewayRequestAuthorizerEventV2, 
   ctx: Context, 
   callback: Callback<APIGatewaySimpleAuthorizerResult>
 ): void => {
-    console.log('event', event);
+    console.log('Incoming request', event);
 
     try {
       const token: string = event.headers?.authorization!;
@@ -23,9 +22,6 @@ export const makeBasicAuthorizer = (): APIGatewayRequestSimpleAuthorizerHandlerV
       const password: string = creds[1];
 
       const storedPassword: string | undefined = process.env[userName];
-
-      console.log('auth values', userName, password, storedPassword);
-
       const isAuthorized: boolean = storedPassword && storedPassword === password 
         ? true
         : false;

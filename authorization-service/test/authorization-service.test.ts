@@ -1,17 +1,32 @@
-// import * as cdk from 'aws-cdk-lib';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as AuthorizationService from '../lib/authorization-service-stack';
+import { 
+  APIGatewayRequestAuthorizerEventV2,
+  Context,
+} from "aws-lambda";
+import { makeBasicAuthorizer } from '../src/handlers/basic-authorizer';
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/authorization-service-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new AuthorizationService.AuthorizationServiceStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+describe('makeBasicAuthorizer tests', () => {
+  process.env.bwire='TEST_PASSWORD';
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+  const mockContext = {} as any as Context;
+  const mockCallback = jest.fn();
+
+  test('bad credentials case', async () => {
+    const mockEvent = {
+      headers: { authorization: 'Basic YndpcmU6VEVTVF9QQVNTV09SRBBB==' },
+    } as any as APIGatewayRequestAuthorizerEventV2;
+    
+    await makeBasicAuthorizer()(mockEvent, mockContext, mockCallback);
+    expect(mockCallback).toHaveBeenCalledWith(null, { isAuthorized: false });
+  });
+
+  test('happy case', async () => {
+    const mockEvent = {
+      headers: { authorization: 'Basic YndpcmU6VEVTVF9QQVNTV09SRA==' },
+    } as any as APIGatewayRequestAuthorizerEventV2;
+    
+    await makeBasicAuthorizer()(mockEvent, mockContext, mockCallback);
+    expect(mockCallback).toHaveBeenCalledWith(null, { isAuthorized: true });
+  });
 });
+
+
