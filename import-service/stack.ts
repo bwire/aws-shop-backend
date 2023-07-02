@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import { App, Duration, Stack } from 'aws-cdk-lib';
+import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Effect, Policy, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
@@ -125,12 +125,34 @@ class ImportServiceStack extends Stack {
       
     });
 
+    const authLambda = Function.fromFunctionName(
+      this, 
+      `${SERVICE_PREFIX}-auth-lambda`, 
+      'basicAuthorizer'
+    );
+    
+    const authorizer: IHttpRouteAuthorizer = new HttpLambdaAuthorizer(
+      `${SERVICE_PREFIX}-basic-authorizer`,
+      authLambda, {
+        authorizerName: 'main-basic-authorizer',
+        responseTypes: [
+          HttpLambdaResponseType.SIMPLE,
+        ],
+        resultsCacheTtl: Duration.seconds(0),  
+      }
+    );
+     
+    authLambda.addPermission('PermitAPIGInvocation', {
+      principal: new ServicePrincipal(api.url!),
+    });
+
     api.addRoutes({
       integration: new HttpLambdaIntegration(
         `${SERVICE_PREFIX}-importProductsFile-integration`, 
         importProductsFileLambda),
       path: "/import",
       methods: [HttpMethod.GET],
+      authorizer,
     });
   }
 }
