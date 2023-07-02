@@ -141,8 +141,8 @@ class ImportServiceStack extends Stack {
         resultsCacheTtl: Duration.seconds(0),  
       }
     );
-     
-    authLambda.addPermission('PermitAPIGInvocation', {
+    
+    authLambda.addPermission(`${SERVICE_PREFIX}-aoi-invocation`, {
       principal: new ServicePrincipal(api.url!),
     });
 
