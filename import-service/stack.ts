@@ -138,14 +138,14 @@ class ImportServiceStack extends Stack {
         responseTypes: [
           HttpLambdaResponseType.SIMPLE,
         ],
-        resultsCacheTtl: Duration.seconds(0),  
+        resultsCacheTtl: Duration.minutes(15),  
       }
     );
     
     authLambda.addPermission(`${SERVICE_PREFIX}-aoi-invocation`, {
       principal: new ServicePrincipal(api.url!),
     });
-
+   
     api.addRoutes({
       integration: new HttpLambdaIntegration(
         `${SERVICE_PREFIX}-importProductsFile-integration`, 
