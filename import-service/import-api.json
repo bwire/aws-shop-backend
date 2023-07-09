@@ -36,12 +36,32 @@
           "200": {
             "description": "Action complete"
           },
+          "401": {
+            "description": "Unauthorized error. No valid header provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/unauthorized_error_response"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden error. Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invalid_error_response"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error_response"
+                  "$ref": "#/components/schemas/internal_error_response"
                 }
               }
             }
@@ -52,7 +72,25 @@
   },
   "components": { 
     "schemas": {
-      "error_response": {
+      "unauthorized_error_response": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string",
+            "example": "Unauthorized"
+          }
+        }
+      },
+      "invalid_error_response": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string",
+            "example": "Forbidden"
+          }
+        }
+      },
+      "internal_error_response": {
         "type": "object",
         "properties": {
           "msg": {

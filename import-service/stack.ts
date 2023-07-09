@@ -1,26 +1,34 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
-import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Effect, Policy, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Runtime, Function } from "aws-cdk-lib/aws-lambda";
 import { 
   HttpApi, 
   CorsHttpMethod, 
-  HttpMethod, 
+  HttpMethod,
+  IHttpRouteAuthorizer,
 } from "@aws-cdk/aws-apigatewayv2-alpha";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
-import { Construct } from 'constructs';
+import { HttpLambdaAuthorizer, HttpLambdaResponseType } from '@aws-cdk/aws-apigatewayv2-authorizers-alpha';
 import { config as envConfig } from 'dotenv';
 
 envConfig();
 class ImportServiceStack extends Stack {
-  constructor(scope: Construct, props?: StackProps) {
-    const APP_PREFIX = "bw-aws-shop-backend-is";
-    super(scope, `${APP_PREFIX}-stack`, props);
+  constructor() {
+    const MAIN_APP_PREFIX = "bw-aws-shop-backend";
+    const SERVICE_PREFIX = `${MAIN_APP_PREFIX}-import`;
+
+    super(
+      new App(), 
+      `${SERVICE_PREFIX}-stack`, {
+        description: "This stack includes resources needed to deploy aws-shop-backend Import service application"
+      }
+    );
 
     const actions: string[] = [
       "s3:GetObject",
@@ -41,7 +49,7 @@ class ImportServiceStack extends Stack {
 
     const importProductsFileLambda = new NodejsFunction(
       this, 
-      `${APP_PREFIX}-import-products-file-lambda`, {
+      `${SERVICE_PREFIX}-import-products-file-lambda`, {
         ...sharedProps,
         functionName: "importProductsFile",
         handler: "importProductsFile",
@@ -52,7 +60,7 @@ class ImportServiceStack extends Stack {
     );
 
     importProductsFileLambda.role?.attachInlinePolicy(
-      new Policy(this, `${APP_PREFIX}-import-products-policy`, {
+      new Policy(this, `${SERVICE_PREFIX}-import-products-policy`, {
         statements: [
           new PolicyStatement({
             effect: Effect.ALLOW,
@@ -65,13 +73,13 @@ class ImportServiceStack extends Stack {
 
     const queue = Queue.fromQueueArn(
       this, 
-      `${APP_PREFIX}-import-sqs-queue`, 
+      `${SERVICE_PREFIX}-import-sqs-queue`, 
       process.env.AWS_IMPORT_SQS_QUEUE_ARN!
     );
 
     const importFileParserLambda = new NodejsFunction(
       this, 
-      `${APP_PREFIX}-import-file-parser-lambda`, {
+      `${SERVICE_PREFIX}-import-file-parser-lambda`, {
         ...sharedProps,
         functionName: "importFileParser",
         handler: "importFileParser",
@@ -83,7 +91,7 @@ class ImportServiceStack extends Stack {
     );
 
     importFileParserLambda.role?.attachInlinePolicy(
-      new Policy(this, `${APP_PREFIX}-file-parser-policy`, {
+      new Policy(this, `${SERVICE_PREFIX}-file-parser-policy`, {
         statements: [
           new PolicyStatement({
             effect: Effect.ALLOW,
@@ -98,7 +106,7 @@ class ImportServiceStack extends Stack {
     
     const bucket = Bucket.fromBucketArn(
       this, 
-      `${APP_PREFIX}-s3-import-service-bucket`, 
+      `${SERVICE_PREFIX}-s3-import-service-bucket`, 
       process.env.AWS_IMPORTS_BUCKET_ARN!
     );
 
@@ -108,24 +116,45 @@ class ImportServiceStack extends Stack {
       {prefix: 'uploaded/', suffix: '.csv'}
     );
 
-    const api = new HttpApi(this, `${APP_PREFIX}-imports-api`, {
+    const api = new HttpApi(this, `${SERVICE_PREFIX}-imports-api`, {
       corsPreflight: {
         allowHeaders: ["*"],
         allowOrigins: ["*"],
         allowMethods: [CorsHttpMethod.ANY],
-      }
+      }, 
+      
     });
 
+    const authLambda = Function.fromFunctionName(
+      this, 
+      `${SERVICE_PREFIX}-auth-lambda`, 
+      'basicAuthorizer'
+    );
+    
+    const authorizer: IHttpRouteAuthorizer = new HttpLambdaAuthorizer(
+      `${SERVICE_PREFIX}-basic-authorizer`,
+      authLambda, {
+        authorizerName: 'main-basic-authorizer',
+        responseTypes: [
+          HttpLambdaResponseType.SIMPLE,
+        ],
+        resultsCacheTtl: Duration.minutes(15),  
+      }
+    );
+    
+    authLambda.addPermission(`${SERVICE_PREFIX}-aoi-invocation`, {
+      principal: new ServicePrincipal(api.url!),
+    });
+   
     api.addRoutes({
       integration: new HttpLambdaIntegration(
-        `${APP_PREFIX}-importProductsFile-integration`, 
+        `${SERVICE_PREFIX}-importProductsFile-integration`, 
         importProductsFileLambda),
       path: "/import",
-      methods: [HttpMethod.GET]
+      methods: [HttpMethod.GET],
+      authorizer,
     });
   }
 }
 
-new ImportServiceStack(new App(), {
-  description: "This stack includes resources needed to deploy aws-shop-backend Import service application"
-});
+new ImportServiceStack();
