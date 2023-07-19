@@ -35,6 +35,16 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(3000);
+  app.use(
+    '/api/orders**',
+    createProxyMiddleware({
+      target: process.env.CART_SERVICE,
+      changeOrigin: true,
+      pathRewrite: { '/api/orders': 'api/profile/orders' },
+    }),
+  );
+
+  await app.listen(4000);
 }
+
 bootstrap();
