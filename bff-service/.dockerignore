@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/test
+.git
+npm-debug.log
+.env
+.eslint.js
+README.md
