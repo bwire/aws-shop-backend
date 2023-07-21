@@ -3,10 +3,14 @@ import { AppModule } from './app.module';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Request } from 'express';
 import { HttpExceptionFilter } from './exception-filter';
+import * as apicache from 'apicache';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
+
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  app.use('/api/products', apicache.middleware('2 minutes'));
 
   app.use(
     '/api/products**',
