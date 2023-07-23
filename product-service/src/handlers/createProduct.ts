@@ -12,6 +12,7 @@ const ProductSchema = z.object({
   title: z.string(),
   description: z.string(),
   count: z.number().nonnegative(),
+  image: z.string().url(),
   price: z.number().nonnegative().gt(0),
 });
 
