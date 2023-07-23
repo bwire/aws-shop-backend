@@ -8,20 +8,20 @@ import { errorResponse, successResponse } from './utils';
 import { ProductService } from "../services/product-service";
 import { Product } from "../services/repository/types";
 
-const ProductSchema = z.object({
+const PayloadSchema = z.object({
   title: z.string(),
   description: z.string(),
-  count: z.number().nonnegative(),
-  image: z.string().url(),
+  image: z.string(),
   price: z.number().nonnegative().gt(0),
+  count: z.number().nonnegative().gt(0),
 });
-
+ 
 export const makeCreateProductHandler = (productService: ProductService) => 
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
       console.log('Incoming request', event); 
       const payload: Product = JSON.parse(event.body! || '{}');
-      const { success } = ProductSchema.safeParse(payload);
+      const { success } = PayloadSchema.safeParse(payload);
 
       if (!success) {
         return errorResponse(new Error('Payload is empty or invalid'), StatusCodes.BAD_REQUEST);  
