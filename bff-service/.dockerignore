@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/test
+**/.elasticbeanstalk
+.git
+npm-debug.log
+.env
+.eslint.js
+README.md

@@ -51,12 +51,12 @@ export class PostgresRepository implements ProductsRepository {
 
   async createProduct(payload: NewProductData): Promise<Product | undefined> {
     const client = await this.getClient();
-    const { title, description, price, count } = payload;
+    const { title, description, image, price, count } = payload;
     const id = uuid();
 
     const queryTextProducts = "\
-      INSERT INTO products(id, title, description, price) \
-      VALUES($1, $2, $3, $4);"
+      INSERT INTO products(id, title, description, image, price) \
+      VALUES($1, $2, $3, $4, $5);"
     const queryTextStocks = "\
       INSERT INTO stocks (product_id, count) \
       VALUES($1, $2)";
@@ -66,7 +66,7 @@ export class PostgresRepository implements ProductsRepository {
 
       await client.query({ 
         text: queryTextProducts, 
-        values: [id, title, description, price],
+        values: [id, title, description, image, price],
       });
       await client.query({ 
         text: queryTextStocks, 

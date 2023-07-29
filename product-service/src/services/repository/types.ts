@@ -1,6 +1,7 @@
 export interface NewProductData {
   title: string,
   description: string,
+  image: string,
   price: number,
   count: number,
 };
